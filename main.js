@@ -10,9 +10,14 @@ function main(){
 	mat4.lookAt(view_matrix, cam.pos, cam.foc, cam.up);
 	mat4.perspective(proj_matrix, 70, c.width/2/c.height, .01, 500);
 	update_mvp(model_matrix, view_matrix, proj_matrix);
+
+	let img = new ImgBuffer(c.width/2, c.height);
+	img.set_random();
+	img_drawer = new ImgDrawer(1, img);
+
 	let plane = new Plane([0, 0, 0], [0, 0, 1], [1, 0, 0], 1);
-	drawer = new VertexDrawer([0], [plane.data.length], [gl.TRIANGLES]);
-	drawer.buffer_data(0, plane.data);
+	vtx_drawer = new VertexDrawer([0], [plane.data.length], [gl.TRIANGLES]);
+	vtx_drawer.buffer_data(0, plane.data);
 
 	let last_t = Date.now();
 	let tick = function(){
@@ -50,7 +55,9 @@ function main(){
 function draw_preview(){
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	gl.viewport(0, 0, c.width/2, c.height)
-	drawer.draw();
+	vtx_drawer.draw();
+	gl.viewport(c.width/2, 0, c.width/2, c.height)
+	img_drawer.draw();
 }
 
 function key_down(e){

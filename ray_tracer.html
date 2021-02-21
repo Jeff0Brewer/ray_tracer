@@ -5,7 +5,7 @@
   <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body onload="main()">
-  <canvas id="canvas" width="1000" height="500"></canvas>
+  <canvas id="canvas" width="1200" height="600"></canvas>
   <script id="v_simple" type="glsl">
     precision mediump float;
 
@@ -30,6 +30,28 @@
 
     void main(){
       gl_FragColor = v_Color;
+    }
+  </script>
+  <script id="v_tex" type="glsl">
+    attribute vec4 a_Position;
+    attribute vec2 a_TexCoord;
+
+    varying vec2 v_TexCoord;
+
+    void main() {
+      gl_Position = a_Position;
+      v_TexCoord = a_TexCoord;
+    }
+  </script>
+  <script id="f_tex" type="glsl">
+    precision mediump float;
+
+    uniform sampler2D u_Sampler;
+
+    varying vec2 v_TexCoord;
+
+    void main() {
+      gl_FragColor = texture2D(u_Sampler, v_TexCoord);
     }
   </script>
   <script src="lib/webgl-utils.js"></script>
