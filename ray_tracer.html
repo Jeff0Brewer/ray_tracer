@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>ray tracer</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body onload="main()">
+  <canvas id="canvas" width="1000" height="500"></canvas>
+  <script id="v_simple" type="glsl">
+    precision mediump float;
+
+    attribute vec4 a_Position;
+    attribute vec4 a_Color;
+
+    uniform mat4 u_ModelMatrix;
+    uniform mat4 u_ViewMatrix;
+    uniform mat4 u_ProjMatrix;
+
+    varying vec4 v_Color;
+
+    void main(){
+      gl_Position = u_ProjMatrix * u_ViewMatrix * u_ModelMatrix * a_Position;
+      v_Color = a_Color;
+    }
+  </script>
+  <script id="f_simple" type="glsl">
+    precision mediump float;
+
+    varying vec4 v_Color;
+
+    void main(){
+      gl_FragColor = v_Color;
+    }
+  </script>
+  <script src="lib/webgl-utils.js"></script>
+  <script src="lib/webgl-debug.js"></script>
+  <script src="lib/cuon-utils.js"></script>
+  <script src="lib/glMatrix.js"></script> 
+  <script src="util.js"></script>
+  <script src="gl.js"></script>
+  <script src="img_buffer.js"></script>
+  <script src="geometry.js"></script>
+  <script src="camera.js"></script>
+  <script src="img_drawer.js"></script>
+  <script src="vtx_drawer.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
