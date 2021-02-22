@@ -107,3 +107,13 @@ function key_up(e){
 			break;
 	}
 }
+
+
+document.getElementById('plane_z').onchange = function(){
+	let value = parseFloat(this.value);
+	if(!Number.isNaN(value)){
+		plane = new Plane([0, 0, value], [0, 0, 1], [1, 0, 0], 1);
+		vtx_drawer.buffer_data(0, plane.data);
+		update_trace();
+	}
+}

@@ -46,7 +46,7 @@ class Plane{
 
 	trace(ray){
 		let t = (this.pos[2] - ray.pos[2])/ray.dir[2];
-		if(t < 0)
+		if(t <= 0)
 			return [0, 0, 0];
 		let intersect = [
 			ray.pos[0] + ray.dir[0]*t,
@@ -55,7 +55,7 @@ class Plane{
 		]
 		vec3.subtract(intersect, intersect, this.pos);
 		if(((Math.floor(intersect[0]/this.s) % 2) + (Math.floor(intersect[1]/this.s) % 2)) % 2 == 0)
-			return this.colors[1];
-		return this.colors[0];
+			return this.colors[0];
+		return this.colors[1];
 	}
 }
