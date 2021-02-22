@@ -1,20 +1,20 @@
 class ImgDrawer{
 	constructor(shader_ind, img_buffer){
-		let tex_w = 1;
-		while(Math.pow(2, tex_w) < img_buffer.w) 
-			tex_w++
-		tex_w = Math.pow(2, tex_w);
-		let tex_h = 1;
-		while(Math.pow(2, tex_h) < img_buffer.h) 
-			tex_h++
-		tex_h = Math.pow(2, tex_h);
+		let w_exp = 1;
+		while(Math.pow(2, w_exp) < img_buffer.w) 
+			w_exp++
+		this.tex_w = Math.pow(2, w_exp);
+		let h_exp = 1;
+		while(Math.pow(2, h_exp) < img_buffer.h) 
+			h_exp++
+		this.tex_h = Math.pow(2, h_exp);
 
 		this.sh = shader_ind;
 		this.data = new Float32Array([
-			-1, 1, 0, img_buffer.h/tex_h,
+			-1, 1, 0, img_buffer.h/this.tex_h,
 			-1, -1, 0, 0,
-			1, 1, img_buffer.w/tex_w, img_buffer.h/tex_h,
-			1, -1, img_buffer.w/tex_w, 0
+			1, 1, img_buffer.w/this.tex_w, img_buffer.h/this.tex_h,
+			1, -1, img_buffer.w/this.tex_w, 0
 		]);
 		this.fsize = this.data.BYTES_PER_ELEMENT;
 
@@ -31,7 +31,7 @@ class ImgDrawer{
 
 		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D, this.gl_tex);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, tex_w, tex_h, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array(tex_w*tex_h*3));
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, this.tex_w, this.tex_h, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array(this.tex_w*this.tex_h*3));
 		gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, img_buffer.w, img_buffer.h, gl.RGB, gl.UNSIGNED_BYTE, img_buffer.int_buf);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 		gl.uniform1i(this.u_Sampler, 0);

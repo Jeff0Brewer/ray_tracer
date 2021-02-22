@@ -18,6 +18,13 @@ ImgBuffer.prototype.float_to_int = function(){
 	}
 }
 
+ImgBuffer.prototype.set_pixel_float = function(color, x, y){
+	let ind = (y*this.w + x)*this.pix_size;
+	this.flt_buf[ind    ] = color[0];
+	this.flt_buf[ind + 1] = color[1];
+	this.flt_buf[ind + 2] = color[2];
+}
+
 ImgBuffer.prototype.set_random = function(){
 	for(let i = 0; i < this.flt_buf.length; i++){
 		this.flt_buf[i] = Math.random();
