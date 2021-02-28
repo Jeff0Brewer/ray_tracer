@@ -11,8 +11,8 @@ class Plane{
 		this.n = vec3.normalize([0, 0, 0], normal);
 		this.s = size;
 		this.colors = [
-			[0, 0, 0],
-			[.4, .4, .4]
+			[.1, 0, .1],
+			[.5, .5, .5]
 		];
 
 		let axis = {

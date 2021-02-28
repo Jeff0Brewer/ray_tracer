@@ -33,12 +33,20 @@ function Camera(cam, focus, up, rot_speed, zoom_speed, width, height){
 	this.v_step = (this.frustum.top - this.frustum.bottom)/this.h;
 }
 
-Camera.prototype.trace = function(plane, img_buffer){
+Camera.prototype.trace = function(plane, img_buffer, samples){
+	let smp_frac = 1/samples;
 	let eye_ray = new Ray();
 	for(let x = 0; x < this.w; x++){
 		for(let y = 0; y < this.h; y++){
-			this.setEyeRay(eye_ray, x + .5, y + .5);
-			img_buffer.set_pixel_float(plane.trace(eye_ray), x, y);
+			let col = [0, 0, 0];
+			for(let sx= 0; sx < samples; sx++){
+				for(let sy = 0; sy < samples; sy++){
+					this.setEyeRay(eye_ray, (this.w - 1 - x) + sx*smp_frac + Math.random()*smp_frac, y + sy*smp_frac + Math.random()*smp_frac);
+					vec3.add(col, col, plane.trace(eye_ray));
+				}
+			}
+			vec3.scale(col, col, smp_frac*smp_frac);
+			img_buffer.set_pixel_float(col, x, y);
 		}
 	}
 	img_buffer.float_to_int();
@@ -88,8 +96,8 @@ Camera.prototype.strafe = function(elapsed){
 	let speed = 10;
 	let d = vec3.add(
 		[0, 0, 0], 
-		vec3.scale([0, 0, 0], vec2.normalize([0, 0], vec2.subtract([0, 0], this.foc.slice(0, 2), this.pos.slice(0, 2))).concat([0]), this.strafe_sign.for*speed*elapsed/1000), 
-		vec3.scale([0, 0, 0], vec3.normalize([0, 0, 0], vec3.cross([0, 0, 0], vec3.subtract([0, 0, 0], this.foc, this.pos), [0, 0, 1])), this.strafe_sign.lat*speed*elapsed/1000)
+		vec3.scale([0,0,0], vec2.normalize([0, 0], vec2.subtract([0, 0], this.foc.slice(0, 2), this.pos.slice(0, 2))).concat([0]), this.strafe_sign.for*speed*elapsed/1000), 
+		vec3.scale([0,0,0], vec3.normalize([0,0,0], vec3.cross([0,0,0], vec3.subtract([0,0,0], this.foc, this.pos), [0, 0, 1])), this.strafe_sign.lat*speed*elapsed/1000)
 	);
 	vec3.add(this.pos, this.pos, d);
 	vec3.add(this.foc, this.foc, d);
@@ -111,16 +119,20 @@ Camera.prototype.mousemove = function(e){
 		let dx = this.r_spd * (e.clientX - this.mouse.x);
 		let dy = this.r_spd * (e.clientY - this.mouse.y);
 		
-		let dir = vec3.subtract([0, 0, 0], this.foc, this.pos);
+		let dir = vec3.subtract([0,0,0], this.foc, this.pos);
 
 		mat4.rotate(this.rotation, mat4.create(), -dx, [0, 0, 1]);
-		mat4.rotate(this.rotation, this.rotation, -dy, vec3.normalize([0, 0, 0], vec3.cross([0, 0, 0], dir, this.up)));
+		mat4.rotate(this.rotation, this.rotation, -dy, vec3.normalize([0,0,0], vec3.cross([0,0,0], dir, this.up)));
 
-		vec3.add(this.foc, this.pos, vec3.transformMat4([0, 0, 0], dir, this.rotation));
+		vec3.add(this.foc, this.pos, vec3.transformMat4(dir, dir, this.rotation));
 		vec3.transformMat4(this.up, this.up, this.rotation);
 
 		this.mouse.x = e.clientX;
 		this.mouse.y = e.clientY;
+
+		vec4.normalize(this.axis.n, [-dir[0], -dir[1], -dir[2], 0]);
+		vec4.normalize(this.axis.u, vec3.cross([0,0,0], this.axis.n, this.up).concat([0]));
+		vec4.normalize(this.axis.v, vec3.cross([0,0,0], this.axis.u, this.axis.n).concat([0]));
 	}
 }
 
@@ -129,7 +141,7 @@ Camera.prototype.mouseup = function(e){
 }
 
 Camera.prototype.wheel = function(e){
-	let d = vec3.scale([0, 0, 0], vec3.subtract([0, 0, 0], this.foc, this.pos), e.deltaY*this.z_spd);
+	let d = vec3.scale([0,0,0], vec3.subtract([0,0,0], this.foc, this.pos), e.deltaY*this.z_spd);
 	vec3.add(this.pos, this.pos, d);
 	vec3.add(this.foc, this.foc, d);
 }

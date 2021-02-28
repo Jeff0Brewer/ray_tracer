@@ -58,7 +58,7 @@ function main(){
 }
 
 function update_trace(){
-	cam.trace(plane, img);
+	cam.trace(plane, img, 4);
 	img_drawer.buffer_img(img);
 }
 
@@ -86,6 +86,9 @@ function key_down(e){
 			break;
 		case 'D':
 			cam.add_strafe([1, 0]);
+			break;
+		case 'T':
+			update_trace();
 			break;
 	}
 }
