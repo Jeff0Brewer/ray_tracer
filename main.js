@@ -19,11 +19,16 @@ function main(){
 	img_drawer = new ImgDrawer(1, img);
 
 	plane = new Plane([0, 0, 0], [0, 0, 1], [1, 0, 0], 1);
-	vtx_drawer = new VertexDrawer([0], [plane.data.length], [gl.TRIANGLES]);
-	vtx_drawer.buffer_data(0, plane.data);
+	sphere = new Sphere([0, 0, 5], 1, [1, 0, 0]);
+
+	vtx_drawers = [
+		new VertexDrawer([0], [plane.data.length], [gl.TRIANGLES]),
+		new VertexDrawer([0], [sphere.data.length], [gl.TRIANGLES])
+	];
+	vtx_drawers[0].buffer_data(0, plane.data);
+	vtx_drawers[1].buffer_data(0, sphere.data);
 
 
-	update_trace();
 	let last_t = Date.now();
 	let tick = function(){
 		let this_t = Date.now();
@@ -58,7 +63,7 @@ function main(){
 }
 
 function update_trace(){
-	cam.trace(plane, img, 4);
+	cam.trace([plane, sphere], img, 3);
 	img_drawer.buffer_img(img);
 }
 
@@ -66,7 +71,8 @@ function draw(){
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 	gl.viewport(0, 0, c.width/2, c.height);
-	vtx_drawer.draw();
+	for(let i = 0; i < vtx_drawers.length; i++)
+		vtx_drawers[i].draw();
 
 	gl.viewport(c.width/2, 0, c.width/2, c.height);
 	img_drawer.draw();
@@ -108,15 +114,5 @@ function key_up(e){
 		case 'D':
 			cam.add_strafe([-1, 0]);
 			break;
-	}
-}
-
-
-document.getElementById('plane_z').onchange = function(){
-	let value = parseFloat(this.value);
-	if(!Number.isNaN(value)){
-		plane = new Plane([0, 0, value], [0, 0, 1], [1, 0, 0], 1);
-		vtx_drawer.buffer_data(0, plane.data);
-		update_trace();
 	}
 }

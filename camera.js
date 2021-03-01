@@ -33,20 +33,29 @@ function Camera(cam, focus, up, rot_speed, zoom_speed, width, height){
 	this.v_step = (this.frustum.top - this.frustum.bottom)/this.h;
 }
 
-Camera.prototype.trace = function(plane, img_buffer, samples){
+Camera.prototype.trace = function(geometries, img_buffer, samples){
 	let smp_frac = 1/samples;
 	let eye_ray = new Ray();
 	for(let x = 0; x < this.w; x++){
 		for(let y = 0; y < this.h; y++){
-			let col = [0, 0, 0];
+			let pix_col = [0, 0, 0];
 			for(let sx= 0; sx < samples; sx++){
 				for(let sy = 0; sy < samples; sy++){
-					this.setEyeRay(eye_ray, (this.w - 1 - x) + sx*smp_frac + Math.random()*smp_frac, y + sy*smp_frac + Math.random()*smp_frac);
-					vec3.add(col, col, plane.trace(eye_ray));
+					let hit_d = 1000000;
+					let col = [0, 0, 0];
+					this.setEyeRay(eye_ray, x + sx*smp_frac + Math.random()*smp_frac, y + sy*smp_frac + Math.random()*smp_frac);
+					for(let g = 0; g < geometries.length; g++){
+						let hit = geometries[g].trace(eye_ray);
+						if(hit != -1 && hit[0] < hit_d){
+							hit_d = hit[0];
+							col = hit[1];
+						}
+					}
+					vec3.add(pix_col, pix_col, col);
 				}
 			}
-			vec3.scale(col, col, smp_frac*smp_frac);
-			img_buffer.set_pixel_float(col, x, y);
+			vec3.scale(pix_col, pix_col, smp_frac*smp_frac);
+			img_buffer.set_pixel_float(pix_col, x, y);
 		}
 	}
 	img_buffer.float_to_int();
@@ -131,8 +140,8 @@ Camera.prototype.mousemove = function(e){
 		this.mouse.y = e.clientY;
 
 		vec4.normalize(this.axis.n, [-dir[0], -dir[1], -dir[2], 0]);
-		vec4.normalize(this.axis.u, vec3.cross([0,0,0], this.axis.n, this.up).concat([0]));
-		vec4.normalize(this.axis.v, vec3.cross([0,0,0], this.axis.u, this.axis.n).concat([0]));
+		vec4.normalize(this.axis.u, vec3.cross([0,0,0], this.up, this.axis.n).concat([0]));
+		vec4.normalize(this.axis.v, vec3.cross([0,0,0], this.axis.n, this.axis.u).concat([0]));
 	}
 }
 
