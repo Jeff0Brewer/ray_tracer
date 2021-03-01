@@ -18,15 +18,25 @@ function main(){
 	img.set_random();
 	img_drawer = new ImgDrawer(1, img);
 
-	plane = new Plane([0, 0, 0], [0, 0, 1], [1, 0, 0], 1);
-	sphere = new Sphere([0, 0, 5], 1, [1, 0, 0]);
+	plane = new Plane();
+	disk = new Disk();
 
+	disk_ro_a = Math.PI/8;
+	disk_ro_ax = [1, 0, 0];
+	disk_tr = [0, 0, 3];
+	disk_sc = [4, 4, 4];
+
+	disk.modelRotate(disk_ro_a, disk_ro_ax);
+	disk.modelTranslate(disk_tr);
+	disk.modelScale(disk_sc);
+
+	scene = [plane, disk];
 	vtx_drawers = [
-		new VertexDrawer([0], [plane.data.length], [gl.TRIANGLES]),
-		new VertexDrawer([0], [sphere.data.length], [gl.TRIANGLES])
+		new VertexDrawer(0, plane.data.length, gl.TRIANGLES),
+		new VertexDrawer(0, disk.data.length, gl.TRIANGLE_FAN)
 	];
 	vtx_drawers[0].buffer_data(0, plane.data);
-	vtx_drawers[1].buffer_data(0, sphere.data);
+	vtx_drawers[1].buffer_data(0, disk.data);
 
 
 	let last_t = Date.now();
@@ -63,7 +73,7 @@ function main(){
 }
 
 function update_trace(){
-	cam.trace([plane, sphere], img, 3);
+	cam.trace(scene, img);
 	img_drawer.buffer_img(img);
 }
 
@@ -71,8 +81,10 @@ function draw(){
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 	gl.viewport(0, 0, c.width/2, c.height);
-	for(let i = 0; i < vtx_drawers.length; i++)
+	for(let i = 0; i < vtx_drawers.length; i++){
+		vtx_drawers[i].set_transform(scene[i].model_to_world);
 		vtx_drawers[i].draw();
+	}
 
 	gl.viewport(c.width/2, 0, c.width/2, c.height);
 	img_drawer.draw();
@@ -115,4 +127,89 @@ function key_up(e){
 			cam.add_strafe([-1, 0]);
 			break;
 	}
+}
+
+document.getElementById('samples').onchange = function(){
+	let value = parseInt(this.value);
+	if(!Number.isNaN(value)){
+		cam.samples = value;
+	}
+}
+
+document.getElementById('tr_x').onchange = function(){
+	let value = parseFloat(this.value);
+	if(!Number.isNaN(value)){
+		disk_tr[0] = value;
+		transform_disk();
+	}
+}
+document.getElementById('tr_y').onchange = function(){
+	let value = parseFloat(this.value);
+	if(!Number.isNaN(value)){
+		disk_tr[1] = value;
+		transform_disk();
+	}
+}
+document.getElementById('tr_z').onchange = function(){
+	let value = parseFloat(this.value);
+	if(!Number.isNaN(value)){
+		disk_tr[2] = value;
+		transform_disk();
+	}
+}
+document.getElementById('ro_a').onchange = function(){
+	let value = parseFloat(this.value);
+	if(!Number.isNaN(value)){
+		disk_ro_a = value;
+		transform_disk();
+	}
+}
+document.getElementById('ro_x').onchange = function(){
+	let value = parseFloat(this.value);
+	if(!Number.isNaN(value)){
+		disk_ro_ax[0] = value;
+		transform_disk();
+	}
+}
+document.getElementById('ro_y').onchange = function(){
+	let value = parseFloat(this.value);
+	if(!Number.isNaN(value)){
+		disk_ro_ax[1] = value;
+		transform_disk();
+	}
+}
+document.getElementById('ro_z').onchange = function(){
+	let value = parseFloat(this.value);
+	if(!Number.isNaN(value)){
+		disk_ro_ax[2] = value;
+		transform_disk();
+	}
+}
+document.getElementById('sc_x').onchange = function(){
+	let value = parseFloat(this.value);
+	if(!Number.isNaN(value)){
+		disk_sc[0] = value;
+		transform_disk();
+	}
+}
+document.getElementById('sc_y').onchange = function(){
+	let value = parseFloat(this.value);
+	if(!Number.isNaN(value)){
+		disk_sc[1] = value;
+		transform_disk();
+	}
+}
+document.getElementById('sc_z').onchange = function(){
+	let value = parseFloat(this.value);
+	if(!Number.isNaN(value)){
+		disk_sc[2] = value;
+		transform_disk();
+	}
+}
+
+function transform_disk(){
+	disk.modelIdentity();
+	disk.modelTranslate(disk_tr);
+	disk.modelRotate(disk_ro_a, disk_ro_ax);
+	disk.modelScale(disk_sc);
 }

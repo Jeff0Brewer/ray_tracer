@@ -6,6 +6,7 @@ function Camera(cam, focus, up, rot_speed, zoom_speed, width, height){
 	this.z_spd = -Math.abs(zoom_speed);
 	this.w = width;
 	this.h = height;
+	this.samples = 3;
 
 	this.rotation = mat4.create();
 	this.dragging = false;
@@ -33,14 +34,14 @@ function Camera(cam, focus, up, rot_speed, zoom_speed, width, height){
 	this.v_step = (this.frustum.top - this.frustum.bottom)/this.h;
 }
 
-Camera.prototype.trace = function(geometries, img_buffer, samples){
-	let smp_frac = 1/samples;
+Camera.prototype.trace = function(geometries, img_buffer){
+	let smp_frac = 1/this.samples;
 	let eye_ray = new Ray();
 	for(let x = 0; x < this.w; x++){
 		for(let y = 0; y < this.h; y++){
 			let pix_col = [0, 0, 0];
-			for(let sx= 0; sx < samples; sx++){
-				for(let sy = 0; sy < samples; sy++){
+			for(let sx= 0; sx < this.samples; sx++){
+				for(let sy = 0; sy < this.samples; sy++){
 					let hit_d = 1000000;
 					let col = [0, 0, 0];
 					this.setEyeRay(eye_ray, x + sx*smp_frac + Math.random()*smp_frac, y + sy*smp_frac + Math.random()*smp_frac);

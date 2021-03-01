@@ -1,31 +1,28 @@
 class VertexDrawer{
-	constructor(shader_inds, buffer_breaks, draw_types){
-		this.sh = shader_inds;
-		this.brk = buffer_breaks;
-		this.typ = draw_types;
+	constructor(shader_ind, buffer_len, draw_type){
+		this.sh = shader_ind;
+		this.len = buffer_len;
+		this.typ = draw_type;
+		this.trans = mat4.create()
 		this.fpv = 6;
 
-		let len = 0;
-		for(let i = 0; i < this.brk.length; i++){
-			len += this.brk[i];
-		}
-		let buffer = new Float32Array(len*this.fpv);
+		let buffer = new Float32Array(this.len*this.fpv);
 		this.fsize = buffer.BYTES_PER_ELEMENT;
 
 		this.gl_buf = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.gl_buf);
 		gl.bufferData(gl.ARRAY_BUFFER, buffer, gl.DYNAMIC_DRAW);
 
-		for(let i = 0; i < this.sh.length; i++){
-			switch_shader(this.sh[i]);
-			let a_Position = gl.getAttribLocation(gl.program, 'a_Position');
-			gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, this.fsize*this.fpv, 0);
-			gl.enableVertexAttribArray(a_Position);
+		switch_shader(this.sh);
+		this.a_Position = gl.getAttribLocation(gl.program, 'a_Position');
+		gl.vertexAttribPointer(this.a_Position, 3, gl.FLOAT, false, this.fsize*this.fpv, 0);
+		gl.enableVertexAttribArray(this.a_Position);
 
-			let a_Color = gl.getAttribLocation(gl.program, 'a_Color');
-			gl.vertexAttribPointer(a_Color, 3, gl.FLOAT, false, this.fsize*this.fpv, 3*this.fsize);
-			gl.enableVertexAttribArray(a_Color);
-		}
+		this.a_Color = gl.getAttribLocation(gl.program, 'a_Color');
+		gl.vertexAttribPointer(this.a_Color, 3, gl.FLOAT, false, this.fsize*this.fpv, 3*this.fsize);
+		gl.enableVertexAttribArray(this.a_Color);
+
+		this.u_ModelMatrix = gl.getUniformLocation(gl.program, 'u_ModelMatrix');
 	}
 
 	buffer_data = function(start_ind, data){
@@ -33,21 +30,17 @@ class VertexDrawer{
 		gl.bufferSubData(gl.ARRAY_BUFFER, start_ind, data);
 	}
 
+	set_transform = function(mat){
+		mat4.copy(this.trans, mat);
+	}
+
 	draw(){
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.gl_buf);
-		let offset = 0;
-		let last_sh = -1;
-		for(let i = 0; i < this.sh.length; i++){
-			if(this.brk[i] > 0){
-				if(this.sh[i] != last_sh){
-					switch_shader(this.sh[i]);
-					gl.vertexAttribPointer(gl.getAttribLocation(gl.program, 'a_Position'), 3, gl.FLOAT, false, this.fsize*this.fpv, 0);
-					gl.vertexAttribPointer(gl.getAttribLocation(gl.program, 'a_Color'), 3, gl.FLOAT, false, this.fsize*this.fpv, 3*this.fsize);
-					last_sh = this.sh[i];
-				}
-				gl.drawArrays(this.typ[i], offset, this.brk[i]);
-				offset += this.brk[i];
-			}
-		}
+		switch_shader(this.sh);
+		gl.vertexAttribPointer(this.a_Position, 3, gl.FLOAT, false, this.fsize*this.fpv, 0);
+		gl.vertexAttribPointer(this.a_Color, 3, gl.FLOAT, false, this.fsize*this.fpv, 3*this.fsize);
+
+		gl.uniformMatrix4fv(this.u_ModelMatrix, false, this.trans);
+		gl.drawArrays(this.typ, 0, this.len);
 	}
 }
