@@ -1,7 +1,83 @@
+class Hit{
+	constructor(d, color){
+		this.d = d;
+		this.color = color;
+	}
+}
+
 class Ray{
 	constructor(){
 		this.pos = vec4.fromValues(0, 0, 0, 1);
 		this.dir = vec4.fromValues(0, 0, -1, 0);
+	}
+}
+
+class Sphere{
+	constructor(){
+		this.pos = [0, 0, 0];
+		this.r = 1;
+		this.color = [1, 1, 0];
+		this.world_to_model = mat4.create();
+		this.model_to_world = mat4.create();
+
+		let iso = gen_iso(2, 'TRI');
+		let tri = [];
+		for(let i = 0; i < iso.length; i++){
+			tri = tri.concat(iso[i]);
+			tri = tri.concat(this.color);
+		}
+
+		this.data = new Float32Array(tri);
+	}
+
+	modelIdentity(){
+		this.model_to_world = mat4.create();
+		mat4.invert(this.world_to_model, this.model_to_world);
+	}
+
+	modelTranslate(vec){
+		mat4.translate(this.model_to_world, this.model_to_world, vec);
+		mat4.invert(this.world_to_model, this.model_to_world);
+	}
+
+	modelRotate(rad, axis){
+		mat4.rotate(this.model_to_world, this.model_to_world, rad, axis);
+		mat4.invert(this.world_to_model, this.model_to_world);
+	}
+
+	modelScale(vec){
+		mat4.scale(this.model_to_world, this.model_to_world, vec);
+		mat4.invert(this.world_to_model, this.model_to_world);
+	}
+
+	trace(ray){
+		let ray_p = vec4.create();
+		let ray_d = vec4.create();
+		vec4.transformMat4(ray_p, ray.pos, this.world_to_model);
+		vec4.transformMat4(ray_d, ray.dir, this.world_to_model);
+
+		let r2s = vec4.subtract([0,0,0,0], [0,0,0,1], ray_p);
+		let L2 = vec3.dot(r2s, r2s);
+		if(L2 <= 1){
+			return;
+		}
+		let tcaS = vec3.dot(ray_d, r2s);
+		if(tcaS < 0){
+			return;
+		}
+		let DL2 = vec3.dot(ray_d, ray_d);
+		let tca2 = tcaS*tcaS / DL2;
+
+		let LM2 = L2 - tca2;
+		if(LM2 > 1){
+			return;
+		}
+		let L2hc = (1 - LM2);
+		let hit_d = tcaS/DL2 - Math.sqrt(L2hc/DL2);
+
+		let hit_p = vec3.scaleAndAdd([0,0,0], ray_p, ray_d, hit_d);
+		vec3.transformMat4(hit_p, hit_p, this.model_to_world);
+		return new Hit(vec3.length(vec3.subtract([0,0,0], hit_p, ray.pos)), this.color);
 	}
 }
 
@@ -48,22 +124,24 @@ class Disk{
 	}
 
 	trace(ray){
-		vec4.transformMat4(ray.pos, ray.pos, this.world_to_model);
-		vec4.transformMat4(ray.dir, ray.dir, this.world_to_model);
+		let ray_p = vec4.create();
+		let ray_d = vec4.create();
+		vec4.transformMat4(ray_p, ray.pos, this.world_to_model);
+		vec4.transformMat4(ray_d, ray.dir, this.world_to_model);
 
-		let t = (this.pos[2] - ray.pos[2])/ray.dir[2];
+		let t = (this.pos[2] - ray_p[2])/ray_d[2];
 		if(t <= 0)
-			return -1;
+			return;
 		let intersect = [
-			ray.pos[0] + ray.dir[0]*t,
-			ray.pos[1] + ray.dir[1]*t,
+			ray_p[0] + ray_d[0]*t,
+			ray_p[1] + ray_d[1]*t,
 			this.pos[2]
 		]
-		let hit_d = vec3.length(vec3.transformMat4([0,0,0], vec3.subtract([0,0,0], intersect, ray.pos), this.model_to_world));
+		let hit_d = vec3.length(vec3.transformMat4([0,0,0], vec3.subtract([0,0,0], intersect, ray_p), this.model_to_world));
 		let hit_r = vec3.length(vec3.subtract([0,0,0], intersect, this.pos));
 		if(hit_r > this.r)
-			return -1;
-		return [hit_d, this.color];
+			return;
+		return new Hit(hit_d, this.color);
 	}
 }
 
@@ -129,21 +207,23 @@ class Plane{
 	}
 
 	trace(ray){
-		vec4.transformMat4(ray.pos, ray.pos, this.world_to_model);
-		vec4.transformMat4(ray.dir, ray.dir, this.world_to_model);
+		let ray_p = vec4.create();
+		let ray_d = vec4.create();
+		vec4.transformMat4(ray_p, ray.pos, this.world_to_model);
+		vec4.transformMat4(ray_d, ray.dir, this.world_to_model);
 
-		let t = (this.pos[2] - ray.pos[2])/ray.dir[2];
+		let t = (this.pos[2] - ray_p[2])/ray_d[2];
 		if(t <= 0)
-			return -1;
+			return;
 		let intersect = [
-			ray.pos[0] + ray.dir[0]*t,
-			ray.pos[1] + ray.dir[1]*t,
+			ray_p[0] + ray_d[0]*t,
+			ray_p[1] + ray_d[1]*t,
 			this.pos[2]
 		]
-		let hit_d = vec3.length(vec3.transformMat4([0,0,0], vec3.subtract([0,0,0], intersect, ray.pos), this.model_to_world));
+		let hit_d = vec3.length(vec3.transformMat4([0,0,0], vec3.subtract([0,0,0], intersect, ray_p), this.model_to_world));
 		vec3.subtract(intersect, intersect, this.pos);
 		if(((Math.floor(intersect[0]/this.s) % 2) + (Math.floor(intersect[1]/this.s) % 2)) % 2 == 0)
-			return [hit_d, this.colors[0]];
-		return [hit_d, this.colors[1]];
+			return new Hit(hit_d, this.colors[0]);
+		return new Hit(hit_d, this.colors[1]);
 	}
 }

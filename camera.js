@@ -47,9 +47,9 @@ Camera.prototype.trace = function(geometries, img_buffer){
 					this.setEyeRay(eye_ray, x + sx*smp_frac + Math.random()*smp_frac, y + sy*smp_frac + Math.random()*smp_frac);
 					for(let g = 0; g < geometries.length; g++){
 						let hit = geometries[g].trace(eye_ray);
-						if(hit != -1 && hit[0] < hit_d){
-							hit_d = hit[0];
-							col = hit[1];
+						if(hit && hit.d < hit_d){
+							hit_d = hit.d;
+							col = hit.color;
 						}
 					}
 					vec3.add(pix_col, pix_col, col);
