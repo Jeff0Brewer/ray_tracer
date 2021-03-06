@@ -14,7 +14,7 @@ function main(){
 	mat4.perspective(proj_matrix, fovy, c.width/2/c.height, .01, 500);
 	update_mvp(model_matrix, view_matrix, proj_matrix);
 
-	img = new ImgBuffer(c.width/2, c.height);
+	img = new ImgBuffer(c.width/2, c.height, .5);
 	img.set_random();
 	img_drawer = new ImgDrawer(1, img);
 

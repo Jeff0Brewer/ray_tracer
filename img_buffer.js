@@ -1,6 +1,7 @@
-function ImgBuffer(width, height){
-	this.w = width;
-	this.h = height;
+function ImgBuffer(width, height, scale){
+	this.w = Math.floor(width*scale);
+	this.h = Math.floor(height*scale);
+	this.scl = scale;
 	this.pix_size = 3;
 	this.int_buf = new Uint8Array(this.w*this.h*this.pix_size);
 	this.flt_buf = new Float32Array(this.w*this.h*this.pix_size);
@@ -19,6 +20,8 @@ ImgBuffer.prototype.float_to_int = function(){
 }
 
 ImgBuffer.prototype.set_pixel_float = function(color, x, y){
+	x = Math.floor(this.scl*x);
+	y = Math.floor(this.scl*y);
 	let ind = (y*this.w + x)*this.pix_size;
 	this.flt_buf[ind    ] = color[0];
 	this.flt_buf[ind + 1] = color[1];

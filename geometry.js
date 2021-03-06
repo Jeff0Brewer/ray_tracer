@@ -108,36 +108,24 @@ class Plane{
 		this.data = new Float32Array(grid);
 	}
 
-	vtxLoadIdentity(){
+	modelIdentity(){
 		this.model_to_world = mat4.create();
+		mat4.invert(this.world_to_model, this.model_to_world);
 	}
 
-	vtxTranslate(vec){
+	modelTranslate(vec){
 		mat4.translate(this.model_to_world, this.model_to_world, vec);
+		mat4.invert(this.world_to_model, this.model_to_world);
 	}
 
-	vtxRotate(rad, axis){
+	modelRotate(rad, axis){
 		mat4.rotate(this.model_to_world, this.model_to_world, rad, axis);
+		mat4.invert(this.world_to_model, this.model_to_world);
 	}
 
-	vtxScale(vec){
+	modelScale(vec){
 		mat4.scale(this.model_to_world, this.model_to_world, vec);
-	}
-
-	rayLoadIdentity(){
-		this.world_to_model = mat4.create();
-	}
-
-	rayTranslate(vec){
-		mat4.translate(this.world_to_model, this.world_to_model, vec3.scale([0,0,0], vec, -1));
-	}
-
-	rayRotate(rad, axis){
-		mat4.rotate(this.world_to_model, this.world_to_model, -rad, axis);
-	}
-
-	rayScale(vec){
-		mat4.scale(this.world_to_model, this.world_to_model, vec3.divide([0,0,0], [1, 1, 1], vec));
+		mat4.invert(this.world_to_model, this.model_to_world);
 	}
 
 	trace(ray){
