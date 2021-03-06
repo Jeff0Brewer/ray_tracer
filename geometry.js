@@ -219,15 +219,16 @@ class Disk{
 		let t = (this.pos[2] - ray_p[2])/ray_d[2];
 		if(t <= 0)
 			return;
-		let intersect = [
+		let hit_p = [
 			ray_p[0] + ray_d[0]*t,
 			ray_p[1] + ray_d[1]*t,
 			this.pos[2]
 		]
-		let hit_d = vec3.length(vec3.transformMat4([0,0,0], vec3.subtract([0,0,0], intersect, ray_p), this.model_to_world));
-		let hit_r = vec3.length(vec3.subtract([0,0,0], intersect, this.pos));
+		let hit_r = vec3.length(vec3.subtract([0,0,0], hit_p, this.pos));
 		if(hit_r > this.r)
 			return;
+		vec3.transformMat4(hit_p, hit_p, this.model_to_world);
+		let hit_d = vec3.length(vec3.subtract([0,0,0], hit_p, ray.pos));
 		return new Hit(hit_d, this.color);
 	}
 }
@@ -302,14 +303,14 @@ class Plane{
 		let t = (this.pos[2] - ray_p[2])/ray_d[2];
 		if(t <= 0)
 			return;
-		let intersect = [
+		let hit_p = [
 			ray_p[0] + ray_d[0]*t,
 			ray_p[1] + ray_d[1]*t,
 			this.pos[2]
 		]
-		let hit_d = vec3.length(vec3.transformMat4([0,0,0], vec3.subtract([0,0,0], intersect, ray_p), this.model_to_world));
-		vec3.subtract(intersect, intersect, this.pos);
-		if(((Math.floor(intersect[0]/this.s) % 2) + (Math.floor(intersect[1]/this.s) % 2)) % 2 == 0)
+		let hit_d = vec3.length(vec3.subtract([0,0,0], vec3.transformMat4([0,0,0], hit_p, this.model_to_world), ray.pos), this.model_to_world);
+		vec3.subtract(hit_p, hit_p, this.pos);
+		if(((Math.floor(hit_p[0]/this.s) % 2) + (Math.floor(hit_p[1]/this.s) % 2)) % 2 == 0)
 			return new Hit(hit_d, this.colors[0]);
 		return new Hit(hit_d, this.colors[1]);
 	}
