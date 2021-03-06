@@ -19,10 +19,14 @@ function Camera(cam, focus, up, rot_speed, zoom_speed, width, height){
 		for: 0
 	};
 	this.axis = {
-		u: vec4.fromValues(1, 0, 0, 0),
-		v: vec4.fromValues(0, 1, 0, 0),
-		n: vec4.fromValues(0, 0, 1, 0)
+		u: vec4.create(),
+		v: vec4.create(),
+		n: vec4.create()
 	};
+	let dir = vec3.subtract([0,0,0], this.foc, this.pos);
+	vec4.normalize(this.axis.n, [-dir[0], -dir[1], -dir[2], 0]);
+	vec4.normalize(this.axis.u, vec3.cross([0,0,0], this.up, this.axis.n).concat([0]));
+	vec4.normalize(this.axis.v, vec3.cross([0,0,0], this.axis.n, this.axis.u).concat([0]));
 	this.frustum = {
 		near: 1,
 		left: -1,
