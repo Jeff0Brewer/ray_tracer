@@ -12,6 +12,93 @@ class Ray{
 	}
 }
 
+class Cube{
+	constructor(){
+		this.pos = [0, 0, 0];
+		this.s = 1;
+		this.color = [1, 0, 0];
+		this.world_to_model = mat4.create();
+		this.model_to_world = mat4.create();
+
+		let s = this.s;
+		let tri = [
+			[-s, -s, -s], [s, -s, -s], [s, s, -s],
+			[-s, -s, -s], [s, s, -s], [-s, s, -s],
+			[-s, -s, s], [s, -s, s], [s, s, s],
+			[-s, -s, s], [s, s, s], [-s, s, s],
+			[-s, -s, -s], [-s, -s, s], [-s, s, s],
+			[-s, -s, -s], [-s, s, s], [-s, s, -s],
+			[s, -s, -s], [s, -s, s], [s, s, s],
+			[s, -s, -s], [s, s, s], [s, s, -s],
+			[-s, -s, -s], [-s, -s, s], [s, -s, s],
+			[-s, -s, -s], [s, -s, s], [s, -s, -s],
+			[-s, s, -s], [-s, s, s], [s, s, s],
+			[-s, s, -s], [s, s, s], [s, s, -s]
+		];
+		let data = [];
+		for(let i = 0; i < tri.length; i++){
+			data = data.concat(tri[i]);
+			data = data.concat(this.color);
+		}
+
+		this.data = new Float32Array(data);
+	}
+
+	modelIdentity(){
+		this.model_to_world = mat4.create();
+		mat4.invert(this.world_to_model, this.model_to_world);
+	}
+
+	modelTranslate(vec){
+		mat4.translate(this.model_to_world, this.model_to_world, vec);
+		mat4.invert(this.world_to_model, this.model_to_world);
+	}
+
+	modelRotate(rad, axis){
+		mat4.rotate(this.model_to_world, this.model_to_world, rad, axis);
+		mat4.invert(this.world_to_model, this.model_to_world);
+	}
+
+	modelScale(vec){
+		mat4.scale(this.model_to_world, this.model_to_world, vec);
+		mat4.invert(this.world_to_model, this.model_to_world);
+	}
+
+	trace(ray){
+		let ray_p = vec4.create();
+		let ray_d = vec4.create();
+		vec4.transformMat4(ray_p, ray.pos, this.world_to_model);
+		vec4.transformMat4(ray_d, ray.dir, this.world_to_model);
+
+		let hit_d = 1000000;
+		let hit_p = vec3.create();
+		let hit = false;
+
+		for(let i = 0; i < 3; i++){
+			let inds = [0, 1, 2]
+			inds.splice(i, 1);
+			for(let s = -1; s <= 1; s += 2){
+				let t = (this.pos[i] + s - ray_p[i])/ray_d[i];
+				if(t > 0 && t < hit_d){
+					let intersect = vec3.scaleAndAdd([0,0,0], ray_p, ray_d, t);
+					intersect[i] = this.pos[i] + s;
+					if(Math.abs(intersect[inds[0]]) < this.s && Math.abs(intersect[inds[1]]) < this.s){
+						hit_d = t;
+						hit_p = intersect;
+						hit = true;
+					}
+				}
+			}
+		}
+		if(!hit){
+			return;
+		}
+
+		vec3.transformMat4(hit_p, hit_p, this.model_to_world);
+		return new Hit(vec3.length(vec3.subtract([0,0,0], hit_p, ray.pos)), this.color);
+	}
+}
+
 class Sphere{
 	constructor(){
 		this.pos = [0, 0, 0];

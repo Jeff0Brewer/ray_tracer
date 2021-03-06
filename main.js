@@ -21,6 +21,7 @@ function main(){
 	plane = new Plane();
 	disk = new Disk();
 	sphere = new Sphere();
+	cube = new Cube();
 
 	disk_ro_a = Math.PI/8;
 	disk_ro_ax = [1, 0, 0];
@@ -34,15 +35,21 @@ function main(){
 	sphere.modelTranslate([5, 5, 5]);
 	sphere.modelScale([3, 3, 4]);
 
-	scene = [plane, disk, sphere];
+	cube.modelRotate(Math.PI/8, [0, 0, 1]);
+	cube.modelTranslate([-5, 5, 5]);
+	cube.modelScale([3, 2, 1]);
+
+	scene = [plane, disk, sphere, cube];
 	vtx_drawers = [
 		new VertexDrawer(0, plane.data.length, gl.TRIANGLES),
 		new VertexDrawer(0, disk.data.length, gl.TRIANGLE_FAN),
-		new VertexDrawer(0, sphere.data.length, gl.TRIANGLES)
+		new VertexDrawer(0, sphere.data.length, gl.TRIANGLES),
+		new VertexDrawer(0, cube.data.length, gl.TRIANGLES)
 	];
 	vtx_drawers[0].buffer_data(0, plane.data);
 	vtx_drawers[1].buffer_data(0, disk.data);
 	vtx_drawers[2].buffer_data(0, sphere.data);
+	vtx_drawers[3].buffer_data(0, cube.data);
 
 
 	let last_t = Date.now();
