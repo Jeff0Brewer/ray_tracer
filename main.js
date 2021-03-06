@@ -4,7 +4,7 @@ function main(){
 	c = document.getElementById('canvas');
 	setup_gl(c);
 
-	cam = new Camera([0, 0, 10], [0, 0, 0], [0, 1, 0], .01, .01, c.width/2, c.height);
+	cam = new Camera([0, 20, 3], [0, 0, 3], [0, 0, 1], .01, .01, c.width/2, c.height);
 	cam.rayPerspective(fovy, c.width/2/c.height, .1);
 
 	model_matrix = mat4.create();
@@ -23,14 +23,9 @@ function main(){
 	sphere = new Sphere();
 	cube = new Cube();
 
-	disk_ro_a = Math.PI/8;
-	disk_ro_ax = [1, 0, 0];
-	disk_tr = [0, 0, 3];
-	disk_sc = [4, 4, 4];
-
-	disk.modelRotate(disk_ro_a, disk_ro_ax);
-	disk.modelTranslate(disk_tr);
-	disk.modelScale(disk_sc);
+	disk.modelRotate(Math.PI/8, [1, 0, 0]);
+	disk.modelTranslate([0, 0, 3]);
+	disk.modelScale([4, 4, 4]);
 
 	sphere.modelTranslate([5, 5, 5]);
 	sphere.modelScale([3, 3, 4]);
@@ -147,82 +142,4 @@ document.getElementById('samples').onchange = function(){
 	if(!Number.isNaN(value)){
 		cam.samples = value;
 	}
-}
-
-document.getElementById('tr_x').onchange = function(){
-	let value = parseFloat(this.value);
-	if(!Number.isNaN(value)){
-		disk_tr[0] = value;
-		transform_disk();
-	}
-}
-document.getElementById('tr_y').onchange = function(){
-	let value = parseFloat(this.value);
-	if(!Number.isNaN(value)){
-		disk_tr[1] = value;
-		transform_disk();
-	}
-}
-document.getElementById('tr_z').onchange = function(){
-	let value = parseFloat(this.value);
-	if(!Number.isNaN(value)){
-		disk_tr[2] = value;
-		transform_disk();
-	}
-}
-document.getElementById('ro_a').onchange = function(){
-	let value = parseFloat(this.value);
-	if(!Number.isNaN(value)){
-		disk_ro_a = value;
-		transform_disk();
-	}
-}
-document.getElementById('ro_x').onchange = function(){
-	let value = parseFloat(this.value);
-	if(!Number.isNaN(value)){
-		disk_ro_ax[0] = value;
-		transform_disk();
-	}
-}
-document.getElementById('ro_y').onchange = function(){
-	let value = parseFloat(this.value);
-	if(!Number.isNaN(value)){
-		disk_ro_ax[1] = value;
-		transform_disk();
-	}
-}
-document.getElementById('ro_z').onchange = function(){
-	let value = parseFloat(this.value);
-	if(!Number.isNaN(value)){
-		disk_ro_ax[2] = value;
-		transform_disk();
-	}
-}
-document.getElementById('sc_x').onchange = function(){
-	let value = parseFloat(this.value);
-	if(!Number.isNaN(value)){
-		disk_sc[0] = value;
-		transform_disk();
-	}
-}
-document.getElementById('sc_y').onchange = function(){
-	let value = parseFloat(this.value);
-	if(!Number.isNaN(value)){
-		disk_sc[1] = value;
-		transform_disk();
-	}
-}
-document.getElementById('sc_z').onchange = function(){
-	let value = parseFloat(this.value);
-	if(!Number.isNaN(value)){
-		disk_sc[2] = value;
-		transform_disk();
-	}
-}
-
-function transform_disk(){
-	disk.modelIdentity();
-	disk.modelTranslate(disk_tr);
-	disk.modelRotate(disk_ro_a, disk_ro_ax);
-	disk.modelScale(disk_sc);
 }
