@@ -1,9 +1,8 @@
 class PhongMat{
-	constructor(ambient, diffuse, specular, emissive){
+	constructor(ambient, diffuse, specular){
 		this.am = ambient.slice();
 		this.di = diffuse.slice();
 		this.sp = specular.slice();
-		this.em = emissive.slice();
 	}
 }
 

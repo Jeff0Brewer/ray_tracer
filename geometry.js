@@ -16,7 +16,7 @@ class Cube{
 	constructor(){
 		this.pos = [0, 0, 0];
 		this.s = 1;
-		this.color = [1, 0, 0];
+		this.material = new PhongMat([.5, .2, .2], [1, 0, 0], [1, 0, .25]);
 		this.world_to_model = mat4.create();
 		this.model_to_world = mat4.create();
 
@@ -45,14 +45,20 @@ class Cube{
 			[-1, 0, 0], [1, 0, 0],
 			[0, -1, 0], [0, 1, 0]
 		];
-		this.data = new Float32Array(tri.length*9);
+		this.data = new Float32Array(tri.length*15);
 		let data_ind = 0;
 		for(let i = 0; i < tri.length; i++){
 			for(let j = 0; j < 3; j++, data_ind++){
 				this.data[data_ind] = tri[i][j];
 			}
 			for(let j = 0; j < 3; j++, data_ind++){
-				this.data[data_ind] = this.color[j];
+				this.data[data_ind] = this.material.am[j];
+			}
+			for(let j = 0; j < 3; j++, data_ind++){
+				this.data[data_ind] = this.material.di[j];
+			}
+			for(let j = 0; j < 3; j++, data_ind++){
+				this.data[data_ind] = this.material.sp[j];
 			}
 			for(let j = 0; j < 3; j++, data_ind++){
 				this.data[data_ind] = norms[Math.floor(i/6)][j];
@@ -111,7 +117,7 @@ class Cube{
 		}
 
 		vec3.transformMat4(hit_p, hit_p, this.model_to_world);
-		return new Hit(vec3.length(vec3.subtract([0,0,0], hit_p, ray.pos)), this.color);
+		return new Hit(vec3.length(vec3.subtract([0,0,0], hit_p, ray.pos)), this.material.am);
 	}
 }
 
@@ -119,19 +125,25 @@ class Sphere{
 	constructor(){
 		this.pos = [0, 0, 0];
 		this.r = 1;
-		this.color = [1, 1, 0];
+		this.material = new PhongMat([.25, .5, 0], [1, 1, 0], [1, 1, 1]);
 		this.world_to_model = mat4.create();
 		this.model_to_world = mat4.create();
 
 		let iso = gen_iso(2, 'TRI');
-		this.data = new Float32Array(iso.length*9);
+		this.data = new Float32Array(iso.length*15);
 		let data_ind = 0;
 		for(let i = 0; i < iso.length; i++){
 			for(let j = 0; j < 3; j++, data_ind++){
 				this.data[data_ind] = iso[i][j];
 			}
 			for(let j = 0; j < 3; j++, data_ind++){
-				this.data[data_ind] = this.color[j];
+				this.data[data_ind] = this.material.am[j];
+			}
+			for(let j = 0; j < 3; j++, data_ind++){
+				this.data[data_ind] = this.material.di[j];
+			}
+			for(let j = 0; j < 3; j++, data_ind++){
+				this.data[data_ind] = this.material.sp[j];
 			}
 			for(let j = 0; j < 3; j++, data_ind++){
 				this.data[data_ind] = iso[i][j];
@@ -186,7 +198,7 @@ class Sphere{
 
 		let hit_p = vec3.scaleAndAdd([0,0,0], ray_p, ray_d, hit_d);
 		vec3.transformMat4(hit_p, hit_p, this.model_to_world);
-		return new Hit(vec3.length(vec3.subtract([0,0,0], hit_p, ray.pos)), this.color);
+		return new Hit(vec3.length(vec3.subtract([0,0,0], hit_p, ray.pos)), this.material.am);
 	}
 }
 
@@ -195,30 +207,27 @@ class Disk{
 		this.pos = [0, 0, 0];
 		this.n = [0, 0, 1];
 		this.r = 1;
-		this.color = [1, 0, 1];
+		this.material = new PhongMat([1, 0, 1], [1, 0, 1], [1, .5, 1]);
 		this.world_to_model = mat4.create();
 		this.model_to_world = mat4.create();
 
 		let detail = 30;
-		this.data = new Float32Array((detail + 2)*9);
+		this.data = new Float32Array((detail + 2)*15);
 		let data_ind = 0;
-		for(let j = 0; j < 3; j++, data_ind++){
-			this.data[data_ind] = 0;
-		}
-		for(let j = 0; j < 3; j++, data_ind++){
-			this.data[data_ind] = this.color[j];
-		}
-		for(let j = 0; j < 3; j++, data_ind++){
-			this.data[data_ind] = this.n[j];
-		}
-		for(let i = 0; i <= detail; i++){
-			let a = i/detail*Math.PI*2;
-			let pos = [Math.cos(a), Math.sin(a), 0]
+		for(let i = 0; i <= detail + 1; i++){
+			let a = (i - 1)/detail*Math.PI*2;
+			let pos = i == 0 ? [0, 0, 0] : [Math.cos(a), Math.sin(a), 0];
 			for(let j = 0; j < 3; j++, data_ind++){
 				this.data[data_ind] = pos[j];
 			}
 			for(let j = 0; j < 3; j++, data_ind++){
-				this.data[data_ind] = this.color[j];
+				this.data[data_ind] = this.material.am[j];
+			}
+			for(let j = 0; j < 3; j++, data_ind++){
+				this.data[data_ind] = this.material.di[j];
+			}
+			for(let j = 0; j < 3; j++, data_ind++){
+				this.data[data_ind] = this.material.sp[j];
 			}
 			for(let j = 0; j < 3; j++, data_ind++){
 				this.data[data_ind] = this.n[j];
@@ -265,7 +274,7 @@ class Disk{
 			return;
 		vec3.transformMat4(hit_p, hit_p, this.model_to_world);
 		let hit_d = vec3.length(vec3.subtract([0,0,0], hit_p, ray.pos));
-		return new Hit(hit_d, this.color);
+		return new Hit(hit_d, this.material.am);
 	}
 }
 
@@ -276,9 +285,9 @@ class Plane{
 		this.s = 1;
 		this.world_to_model = mat4.create();
 		this.model_to_world = mat4.create();
-		this.colors = [
-			[.1, 0, .1],
-			[.5, .5, .5]
+		this.materials = [
+			new PhongMat([.1, 0, .1], [.1, 0, .1], [0, 0, 0]),
+			new PhongMat([.5, .5, .5], [.5, .5, .5], [0, 0, 0])
 		];
 
 		let axis = {
@@ -295,19 +304,25 @@ class Plane{
 			[-this.s/2, this.s/2, 0]
 		];
 		let grid_size = 99;
-		this.data = new Float32Array(grid_size*grid_size*sq.length*9);
+		this.data = new Float32Array(grid_size*grid_size*sq.length*15);
 		let sq_ind = 0;
 		let data_ind = 0;
 		for(let x_d = -this.s*grid_size/2; x_d < this.s*grid_size/2; x_d += this.s){
 			for(let y_d = -this.s*grid_size/2; y_d < this.s*grid_size/2; y_d += this.s, sq_ind++){
 				let offset = [x_d, y_d, 0];
-				let color = this.colors[sq_ind % 2];
+				let material = this.materials[sq_ind % 2];
 				for(let i = 0; i < sq.length; i++){
 					for(let j = 0; j < 3; j++, data_ind++){
 						this.data[data_ind] = sq[i][j] + offset[j];
 					}
 					for(let j = 0; j < 3; j++, data_ind++){
-						this.data[data_ind] = color[j];
+						this.data[data_ind] = material.am[j];
+					}
+					for(let j = 0; j < 3; j++, data_ind++){
+						this.data[data_ind] = material.di[j];
+					}
+					for(let j = 0; j < 3; j++, data_ind++){
+						this.data[data_ind] = material.sp[j];
 					}
 					for(let j = 0; j < 3; j++, data_ind++){
 						this.data[data_ind] = this.n[j];
@@ -354,7 +369,7 @@ class Plane{
 		let hit_d = vec3.length(vec3.subtract([0,0,0], vec3.transformMat4([0,0,0], hit_p, this.model_to_world), ray.pos), this.model_to_world);
 		vec3.subtract(hit_p, hit_p, this.pos);
 		if(((Math.floor(hit_p[0]/this.s) % 2) + (Math.floor(hit_p[1]/this.s) % 2)) % 2 == 0)
-			return new Hit(hit_d, this.colors[0]);
-		return new Hit(hit_d, this.colors[1]);
+			return new Hit(hit_d, this.materials[0].am);
+		return new Hit(hit_d, this.materials[1].am);
 	}
 }

@@ -5,7 +5,7 @@ class VertexDrawer{
 		this.typ = draw_type;
 		this.model_matrix = mat4.create();
 		this.normal_matrix = mat4.create();
-		this.fpv = 9;
+		this.fpv = 15;
 
 		let buffer = new Float32Array(this.len*this.fpv);
 		this.fsize = buffer.BYTES_PER_ELEMENT;
@@ -19,12 +19,20 @@ class VertexDrawer{
 		gl.vertexAttribPointer(this.a_Position, 3, gl.FLOAT, false, this.fsize*this.fpv, 0);
 		gl.enableVertexAttribArray(this.a_Position);
 
-		this.a_Color = gl.getAttribLocation(gl.program, 'a_Color');
-		gl.vertexAttribPointer(this.a_Color, 3, gl.FLOAT, false, this.fsize*this.fpv, 3*this.fsize);
-		gl.enableVertexAttribArray(this.a_Color);
+		this.a_AmbRef = gl.getAttribLocation(gl.program, 'a_AmbRef');
+		gl.vertexAttribPointer(this.a_AmbRef, 3, gl.FLOAT, false, this.fsize*this.fpv, 3*this.fsize);
+		gl.enableVertexAttribArray(this.a_AmbRef);
+
+		this.a_DifRef = gl.getAttribLocation(gl.program, 'a_DifRef');
+		gl.vertexAttribPointer(this.a_DifRef, 3, gl.FLOAT, false, this.fsize*this.fpv, 6*this.fsize);
+		gl.enableVertexAttribArray(this.a_DifRef);
+
+		this.a_SpeRef = gl.getAttribLocation(gl.program, 'a_SpeRef');
+		gl.vertexAttribPointer(this.a_SpeRef, 3, gl.FLOAT, false, this.fsize*this.fpv, 9*this.fsize);
+		gl.enableVertexAttribArray(this.a_SpeRef);
 
 		this.a_Normal = gl.getAttribLocation(gl.program, 'a_Normal');
-		gl.vertexAttribPointer(this.a_Normal, 3, gl.FLOAT, false, this.fsize*this.fpv, 6*this.fsize);
+		gl.vertexAttribPointer(this.a_Normal, 3, gl.FLOAT, false, this.fsize*this.fpv, 12*this.fsize);
 		gl.enableVertexAttribArray(this.a_Normal);
 
 		this.u_ModelMatrix = gl.getUniformLocation(gl.program, 'u_ModelMatrix');
@@ -48,8 +56,10 @@ class VertexDrawer{
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.gl_buf);
 		switch_shader(this.sh);
 		gl.vertexAttribPointer(this.a_Position, 3, gl.FLOAT, false, this.fsize*this.fpv, 0);
-		gl.vertexAttribPointer(this.a_Color, 3, gl.FLOAT, false, this.fsize*this.fpv, 3*this.fsize);
-		gl.vertexAttribPointer(this.a_Normal, 3, gl.FLOAT, false, this.fsize*this.fpv, 6*this.fsize);
+		gl.vertexAttribPointer(this.a_AmbRef, 3, gl.FLOAT, false, this.fsize*this.fpv, 3*this.fsize);
+		gl.vertexAttribPointer(this.a_DifRef, 3, gl.FLOAT, false, this.fsize*this.fpv, 6*this.fsize);
+		gl.vertexAttribPointer(this.a_SpeRef, 3, gl.FLOAT, false, this.fsize*this.fpv, 9*this.fsize);
+		gl.vertexAttribPointer(this.a_Normal, 3, gl.FLOAT, false, this.fsize*this.fpv, 12*this.fsize);
 
 		gl.uniformMatrix4fv(this.u_ModelMatrix, false, this.model_matrix);
 		gl.uniformMatrix4fv(this.u_NormalMatrix, false, this.normal_matrix);

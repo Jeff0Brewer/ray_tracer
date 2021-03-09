@@ -13,7 +13,9 @@
     precision mediump float;
 
     attribute vec4 a_Position;
-    attribute vec4 a_Color;
+    attribute vec3 a_AmbRef;
+    attribute vec3 a_DifRef;
+    attribute vec3 a_SpeRef;
     attribute vec4 a_Normal;
 
     uniform mat4 u_ModelMatrix;
@@ -21,15 +23,23 @@
     uniform mat4 u_ProjMatrix;
     uniform mat4 u_NormalMatrix;
 
-    uniform float u_Ambient;
+    uniform vec4 u_Camera;
+    uniform vec3 u_Ambient;
     uniform vec4 u_Light0;
+    uniform vec3 u_Light0Dif;
+    uniform vec3 u_Light0Spe;
 
     varying vec4 v_Color;
 
     void main(){
       gl_Position = u_ProjMatrix * u_ViewMatrix * u_ModelMatrix * a_Position;
-      float s = max(0.0, dot(normalize(u_Light0 - u_ModelMatrix * a_Position), normalize(u_NormalMatrix * a_Normal)));
-      v_Color = vec4(a_Color.xyz*(s + u_Ambient), a_Color.w);
+      vec4 N = normalize(u_NormalMatrix * a_Normal);
+      vec4 V = normalize(u_Camera - u_ModelMatrix * a_Position);
+      vec4 L = normalize(u_Light0 - u_ModelMatrix * a_Position);
+      vec4 R = reflect(L, N);
+      float Se = 50.0;
+      vec3 RGB = u_Ambient * a_AmbRef + u_Light0Dif * a_DifRef * max(0.0, dot(N, L)) + u_Light0Spe * a_SpeRef * pow(max(0.0, dot(R, V)), Se);
+      v_Color = vec4(RGB, 1.0);
     }
   </script>
   <script id="f_simple" type="glsl">

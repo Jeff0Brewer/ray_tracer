@@ -21,10 +21,18 @@ function main(){
 	gl.uniformMatrix4fv(u_ViewMatrix, false, view_matrix);
 	gl.uniformMatrix4fv(u_ProjMatrix, false, proj_matrix);
 
+	light0 = new PhongLight([0, -15, 8, 0], [1, 1, 1], [1, 1, 1]);
+
+	u_Camera = gl.getUniformLocation(gl.program, 'u_Camera');
 	u_Ambient = gl.getUniformLocation(gl.program, 'u_Ambient');
 	u_Light0 = gl.getUniformLocation(gl.program, 'u_Light0');
-	gl.uniform4fv(u_Light0, [0, -10, 10, 0]);
-	gl.uniform1f(u_Ambient, .2);
+	u_Light0Dif = gl.getUniformLocation(gl.program, 'u_Light0Dif');
+	u_Light0Spe = gl.getUniformLocation(gl.program, 'u_Light0Spe');
+	gl.uniform3fv(u_Ambient, [.2, .2, .2]);
+	gl.uniform4fv(u_Camera, [cam.pos[0], cam.pos[1], cam.pos[2], 0]);
+	gl.uniform4fv(u_Light0, light0.pos);
+	gl.uniform3fv(u_Light0Dif, light0.di);
+	gl.uniform3fv(u_Light0Spe, light0.sp);
 
 	img = new ImgBuffer(c.width/2, c.height, .5);
 	img.set_random();
@@ -68,6 +76,7 @@ function main(){
 		cam.strafe(elapsed);
 		mat4.lookAt(view_matrix, cam.pos, cam.foc, cam.up);
 		switch_shader(0);
+		gl.uniform4fv(u_Camera, [cam.pos[0], cam.pos[1], cam.pos[2], 0]);
 		gl.uniformMatrix4fv(u_ViewMatrix, false, view_matrix);
 
 		draw();
