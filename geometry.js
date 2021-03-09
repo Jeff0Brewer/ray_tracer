@@ -24,24 +24,40 @@ class Cube{
 		let tri = [
 			[-s, -s, -s], [s, -s, -s], [s, s, -s],
 			[-s, -s, -s], [s, s, -s], [-s, s, -s],
+
 			[-s, -s, s], [s, -s, s], [s, s, s],
 			[-s, -s, s], [s, s, s], [-s, s, s],
+
 			[-s, -s, -s], [-s, -s, s], [-s, s, s],
 			[-s, -s, -s], [-s, s, s], [-s, s, -s],
+
 			[s, -s, -s], [s, -s, s], [s, s, s],
 			[s, -s, -s], [s, s, s], [s, s, -s],
+
 			[-s, -s, -s], [-s, -s, s], [s, -s, s],
 			[-s, -s, -s], [s, -s, s], [s, -s, -s],
+
 			[-s, s, -s], [-s, s, s], [s, s, s],
 			[-s, s, -s], [s, s, s], [s, s, -s]
 		];
-		let data = [];
+		let norms = [
+			[0, 0, -1], [0, 0, 1],
+			[-1, 0, 0], [1, 0, 0],
+			[0, -1, 0], [0, 1, 0]
+		];
+		this.data = new Float32Array(tri.length*9);
+		let data_ind = 0;
 		for(let i = 0; i < tri.length; i++){
-			data = data.concat(tri[i]);
-			data = data.concat(this.color);
+			for(let j = 0; j < 3; j++, data_ind++){
+				this.data[data_ind] = tri[i][j];
+			}
+			for(let j = 0; j < 3; j++, data_ind++){
+				this.data[data_ind] = this.color[j];
+			}
+			for(let j = 0; j < 3; j++, data_ind++){
+				this.data[data_ind] = norms[Math.floor(i/6)][j];
+			}
 		}
-
-		this.data = new Float32Array(data);
 	}
 
 	modelIdentity(){
@@ -108,13 +124,19 @@ class Sphere{
 		this.model_to_world = mat4.create();
 
 		let iso = gen_iso(2, 'TRI');
-		let tri = [];
+		this.data = new Float32Array(iso.length*9);
+		let data_ind = 0;
 		for(let i = 0; i < iso.length; i++){
-			tri = tri.concat(iso[i]);
-			tri = tri.concat(this.color);
+			for(let j = 0; j < 3; j++, data_ind++){
+				this.data[data_ind] = iso[i][j];
+			}
+			for(let j = 0; j < 3; j++, data_ind++){
+				this.data[data_ind] = this.color[j];
+			}
+			for(let j = 0; j < 3; j++, data_ind++){
+				this.data[data_ind] = iso[i][j];
+			}
 		}
-
-		this.data = new Float32Array(tri);
 	}
 
 	modelIdentity(){
@@ -178,16 +200,30 @@ class Disk{
 		this.model_to_world = mat4.create();
 
 		let detail = 30;
-		let tri = [];
-		tri = tri.concat([0, 0, 0]);
-		tri = tri.concat(this.color);
+		this.data = new Float32Array((detail + 2)*9);
+		let data_ind = 0;
+		for(let j = 0; j < 3; j++, data_ind++){
+			this.data[data_ind] = 0;
+		}
+		for(let j = 0; j < 3; j++, data_ind++){
+			this.data[data_ind] = this.color[j];
+		}
+		for(let j = 0; j < 3; j++, data_ind++){
+			this.data[data_ind] = this.n[j];
+		}
 		for(let i = 0; i <= detail; i++){
 			let a = i/detail*Math.PI*2;
-			tri = tri.concat([Math.cos(a), Math.sin(a), 0]);
-			tri = tri.concat(this.color);
+			let pos = [Math.cos(a), Math.sin(a), 0]
+			for(let j = 0; j < 3; j++, data_ind++){
+				this.data[data_ind] = pos[j];
+			}
+			for(let j = 0; j < 3; j++, data_ind++){
+				this.data[data_ind] = this.color[j];
+			}
+			for(let j = 0; j < 3; j++, data_ind++){
+				this.data[data_ind] = this.n[j];
+			}
 		}
-
-		this.data = new Float32Array(tri);
 	}
 
 	modelIdentity(){
@@ -250,28 +286,35 @@ class Plane{
 			y: [0, 1, 0],
 			z: [0, 0, 1]
 		};
-		let sq = [].concat(
-			vec3.add([0, 0, 0], vec3.scale([0, 0, 0], axis.x, -this.s/2), vec3.scale([0, 0, 0], axis.y, -this.s/2)), [0, 0, 0],
-			vec3.add([0, 0, 0], vec3.scale([0, 0, 0], axis.x,  this.s/2), vec3.scale([0, 0, 0], axis.y, -this.s/2)), [0, 0, 0],
-			vec3.add([0, 0, 0], vec3.scale([0, 0, 0], axis.x,  this.s/2), vec3.scale([0, 0, 0], axis.y,  this.s/2)), [0, 0, 0],
-
-			vec3.add([0, 0, 0], vec3.scale([0, 0, 0], axis.x, -this.s/2), vec3.scale([0, 0, 0], axis.y, -this.s/2)), [0, 0, 0],
-			vec3.add([0, 0, 0], vec3.scale([0, 0, 0], axis.x,  this.s/2), vec3.scale([0, 0, 0], axis.y,  this.s/2)), [0, 0, 0],
-			vec3.add([0, 0, 0], vec3.scale([0, 0, 0], axis.x, -this.s/2), vec3.scale([0, 0, 0], axis.y,  this.s/2)), [0, 0, 0]
-		);
+		let sq = [
+			[-this.s/2, -this.s/2, 0],
+			[this.s/2, -this.s/2, 0],
+			[this.s/2, this.s/2, 0],
+			[-this.s/2, -this.s/2, 0],
+			[this.s/2, this.s/2, 0],
+			[-this.s/2, this.s/2, 0]
+		];
 		let grid_size = 99;
-		let grid = [];
+		this.data = new Float32Array(grid_size*grid_size*sq.length*9);
 		let sq_ind = 0;
+		let data_ind = 0;
 		for(let x_d = -this.s*grid_size/2; x_d < this.s*grid_size/2; x_d += this.s){
-			let off_x = vec3.add([0, 0, 0], vec3.scale([0, 0, 0], axis.x, x_d), this.pos);
 			for(let y_d = -this.s*grid_size/2; y_d < this.s*grid_size/2; y_d += this.s, sq_ind++){
-				let offset = vec3.add([0, 0, 0], off_x, vec3.scale([0, 0, 0], axis.y, y_d)).concat(this.colors[sq_ind % 2]);
+				let offset = [x_d, y_d, 0];
+				let color = this.colors[sq_ind % 2];
 				for(let i = 0; i < sq.length; i++){
-						grid.push(sq[i] + offset[i % offset.length]);
+					for(let j = 0; j < 3; j++, data_ind++){
+						this.data[data_ind] = sq[i][j] + offset[j];
+					}
+					for(let j = 0; j < 3; j++, data_ind++){
+						this.data[data_ind] = color[j];
+					}
+					for(let j = 0; j < 3; j++, data_ind++){
+						this.data[data_ind] = this.n[j];
+					}
 				}
 			}
 		}
-		this.data = new Float32Array(grid);
 	}
 
 	modelIdentity(){

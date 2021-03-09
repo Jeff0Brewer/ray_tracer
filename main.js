@@ -4,7 +4,7 @@ function main(){
 	c = document.getElementById('canvas');
 	setup_gl(c);
 
-	cam = new Camera([0, 20, 3], [0, 0, 3], [0, 0, 1], .01, .01, c.width/2, c.height);
+	cam = new Camera([0, -15, 8], [0, 0, 3], [0, 0, 1], .01, .01, c.width/2, c.height);
 	cam.rayPerspective(fovy, c.width/2/c.height, .1);
 
 	model_matrix = mat4.create();
@@ -12,7 +12,19 @@ function main(){
 	proj_matrix = mat4.create();
 	mat4.lookAt(view_matrix, cam.pos, cam.foc, cam.up);
 	mat4.perspective(proj_matrix, fovy, c.width/2/c.height, .01, 500);
-	update_mvp(model_matrix, view_matrix, proj_matrix);
+
+	switch_shader(0);
+	u_ModelMatrix = gl.getUniformLocation(gl.program, 'u_ModelMatrix');
+	u_ViewMatrix = gl.getUniformLocation(gl.program, 'u_ViewMatrix');
+	u_ProjMatrix = gl.getUniformLocation(gl.program, 'u_ProjMatrix');
+	gl.uniformMatrix4fv(u_ModelMatrix, false, model_matrix);
+	gl.uniformMatrix4fv(u_ViewMatrix, false, view_matrix);
+	gl.uniformMatrix4fv(u_ProjMatrix, false, proj_matrix);
+
+	u_Ambient = gl.getUniformLocation(gl.program, 'u_Ambient');
+	u_Light0 = gl.getUniformLocation(gl.program, 'u_Light0');
+	gl.uniform4fv(u_Light0, [0, -10, 10, 0]);
+	gl.uniform1f(u_Ambient, .2);
 
 	img = new ImgBuffer(c.width/2, c.height, .5);
 	img.set_random();
@@ -55,7 +67,9 @@ function main(){
 
 		cam.strafe(elapsed);
 		mat4.lookAt(view_matrix, cam.pos, cam.foc, cam.up);
-		update_view(view_matrix);
+		switch_shader(0);
+		gl.uniformMatrix4fv(u_ViewMatrix, false, view_matrix);
+
 		draw();
 	}
 	setInterval(tick, 1000/60);

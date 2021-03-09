@@ -26,24 +26,6 @@ function switch_shader(i){
 	gl.program = programs[i];
 }
 
-//update all shaders using model, view, and projection matrixes
-function update_mvp(model_matrix, view_matrix, proj_matrix){
-	for(let i = 0; i < mvp_shaders.length; i++){
-		switch_shader(mvp_shaders[i]);
-		gl.uniformMatrix4fv(u_ModelMatrix[i], false, model_matrix);
-		gl.uniformMatrix4fv(u_ViewMatrix[i], false, view_matrix);
-		gl.uniformMatrix4fv(u_ProjMatrix[i], false, proj_matrix);
-	}
-}
-
-//update all shaders using view matrix
-function update_view(view_matrix){
-	for(let i = 0; i < mvp_shaders.length; i++){
-		switch_shader(mvp_shaders[i]);
-		gl.uniformMatrix4fv(u_ViewMatrix[i], false, view_matrix);
-	}
-}
-
 //initialize gl context
 function setup_gl(canvas){
 	gl = canvas.getContext('webgl', {preserveDrawingBuffer: false});
@@ -56,15 +38,4 @@ function setup_gl(canvas){
 
 	programs.push(create_program(document.getElementById('v_simple').text, document.getElementById('f_simple').text));
 	programs.push(create_program(document.getElementById('v_tex').text, document.getElementById('f_tex').text));
-
-	mvp_shaders = [0];
-	u_ModelMatrix = [];
-	u_ViewMatrix = [];
-	u_ProjMatrix = [];
-	for(let i = 0; i < mvp_shaders.length; i++){
-		switch_shader(mvp_shaders[i]);
-		u_ModelMatrix.push(gl.getUniformLocation(gl.program, 'u_ModelMatrix'));
-		u_ViewMatrix.push(gl.getUniformLocation(gl.program, 'u_ViewMatrix'));
-		u_ProjMatrix.push(gl.getUniformLocation(gl.program, 'u_ProjMatrix'));
-	}
 }
