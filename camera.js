@@ -1,3 +1,36 @@
+class Scene{
+	constructor(geometries, lights, ambient){
+		this.geometries = geometries;
+		this.lights = lights;
+		this.am = ambient;
+	}
+
+	trace_ray(ray){
+		let min_d = 1000000;
+		let col = [0, 0, 0];
+		let Se = 50;
+		for(let g = 0; g < this.geometries.length; g++){
+			let hit = this.geometries[g].trace(ray);
+			if(hit){
+				let hit_d = vec3.length(vec3.subtract([0,0,0], ray.pos, hit.p))
+				if(hit_d < min_d){
+					min_d = hit_d;
+					let N = hit.n;
+					let V = vec3.normalize([0,0,0], vec3.subtract([0,0,0], ray.pos, hit.p));
+					for(let l = 0; l < this.lights.length; l++){
+						let L = vec3.normalize([0,0,0], vec3.subtract([0,0,0], this.lights[l].pos, hit.p));
+						let R = vec3.normalize([0,0,0], vec3.scaleAndAdd([0,0,0], L, N, 2*vec3.dot(N, L)));
+						col = vec3.multiply([0,0,0], this.am, hit.mat.am);
+						vec3.scaleAndAdd(col, col, vec3.multiply([0,0,0], this.lights[l].di, hit.mat.di), Math.max(0, vec3.dot(N, L)));
+						vec3.scaleAndAdd(col, col, vec3.multiply([0,0,0], this.lights[l].sp, hit.mat.sp), Math.pow(Math.max(0, vec3.dot(R, V)), Se));
+					}
+				}
+			}
+		}
+		return col;
+	}
+}
+
 function Camera(cam, focus, up, rot_speed, zoom_speed, width, height){
 	this.pos = cam;
 	this.foc = focus;
@@ -38,7 +71,7 @@ function Camera(cam, focus, up, rot_speed, zoom_speed, width, height){
 	this.v_step = (this.frustum.top - this.frustum.bottom)/this.h;
 }
 
-Camera.prototype.trace = function(geometries, img_buffer){
+Camera.prototype.trace = function(scene, img_buffer){
 	let smp_frac = 1/this.samples;
 	let eye_ray = new Ray();
 	for(let x = 0; x < this.w; x++){
@@ -47,16 +80,8 @@ Camera.prototype.trace = function(geometries, img_buffer){
 			for(let sx = 0; sx < this.samples; sx++){
 				for(let sy = 0; sy < this.samples; sy++){
 					let hit_d = 1000000;
-					let col = [0, 0, 0];
 					this.setEyeRay(eye_ray, x + sx*smp_frac + Math.random()*smp_frac, y + sy*smp_frac + Math.random()*smp_frac);
-					for(let g = 0; g < geometries.length; g++){
-						let hit = geometries[g].trace(eye_ray);
-						if(hit && hit.d < hit_d){
-							hit_d = hit.d;
-							col = hit.color;
-						}
-					}
-					vec3.add(pix_col, pix_col, col);
+					vec3.add(pix_col, pix_col, scene.trace_ray(eye_ray));
 				}
 			}
 			vec3.scale(pix_col, pix_col, smp_frac*smp_frac);
@@ -110,7 +135,7 @@ Camera.prototype.strafe = function(elapsed){
 	let speed = 10;
 	let d = vec3.add(
 		[0, 0, 0], 
-		vec3.scale([0,0,0], vec2.normalize([0, 0], vec2.subtract([0, 0], this.foc.slice(0, 2), this.pos.slice(0, 2))).concat([0]), this.strafe_sign.for*speed*elapsed/1000), 
+		vec3.scale([0,0,0], vec2.normalize([0, 0], vec2.subtract([0,0], this.foc.slice(0, 2), this.pos.slice(0, 2))).concat([0]), this.strafe_sign.for*speed*elapsed/1000), 
 		vec3.scale([0,0,0], vec3.normalize([0,0,0], vec3.cross([0,0,0], vec3.subtract([0,0,0], this.foc, this.pos), [0, 0, 1])), this.strafe_sign.lat*speed*elapsed/1000)
 	);
 	vec3.add(this.pos, this.pos, d);

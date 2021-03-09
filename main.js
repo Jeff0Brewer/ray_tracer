@@ -23,21 +23,6 @@ function main(){
 
 	light0 = new PhongLight([0, -15, 8, 0], [1, 1, 1], [1, 1, 1]);
 
-	u_Camera = gl.getUniformLocation(gl.program, 'u_Camera');
-	u_Ambient = gl.getUniformLocation(gl.program, 'u_Ambient');
-	u_Light0 = gl.getUniformLocation(gl.program, 'u_Light0');
-	u_Light0Dif = gl.getUniformLocation(gl.program, 'u_Light0Dif');
-	u_Light0Spe = gl.getUniformLocation(gl.program, 'u_Light0Spe');
-	gl.uniform3fv(u_Ambient, [.2, .2, .2]);
-	gl.uniform4fv(u_Camera, [cam.pos[0], cam.pos[1], cam.pos[2], 0]);
-	gl.uniform4fv(u_Light0, light0.pos);
-	gl.uniform3fv(u_Light0Dif, light0.di);
-	gl.uniform3fv(u_Light0Spe, light0.sp);
-
-	img = new ImgBuffer(c.width/2, c.height, .5);
-	img.set_random();
-	img_drawer = new ImgDrawer(1, img);
-
 	plane = new Plane();
 	disk = new Disk();
 	sphere = new Sphere();
@@ -54,7 +39,23 @@ function main(){
 	cube.modelTranslate([-5, 5, 5]);
 	cube.modelScale([3, 2, 1]);
 
-	scene = [plane, disk, sphere, cube];
+	scene =  new Scene([plane, disk, sphere, cube], [light0], [.2, .2, .2]);
+
+	u_Camera = gl.getUniformLocation(gl.program, 'u_Camera');
+	u_Ambient = gl.getUniformLocation(gl.program, 'u_Ambient');
+	u_Light0 = gl.getUniformLocation(gl.program, 'u_Light0');
+	u_Light0Dif = gl.getUniformLocation(gl.program, 'u_Light0Dif');
+	u_Light0Spe = gl.getUniformLocation(gl.program, 'u_Light0Spe');
+	gl.uniform4fv(u_Camera, [cam.pos[0], cam.pos[1], cam.pos[2], 0]);
+	gl.uniform3fv(u_Ambient, scene.am);
+	gl.uniform4fv(u_Light0, light0.pos);
+	gl.uniform3fv(u_Light0Dif, light0.di);
+	gl.uniform3fv(u_Light0Spe, light0.sp);
+
+	img = new ImgBuffer(c.width/2, c.height, .5);
+	img.set_random();
+	img_drawer = new ImgDrawer(1, img);
+
 	vtx_drawers = [
 		new VertexDrawer(0, plane.data.length, gl.TRIANGLES),
 		new VertexDrawer(0, disk.data.length, gl.TRIANGLE_FAN),
@@ -113,7 +114,7 @@ function draw(){
 
 	gl.viewport(0, 0, c.width/2, c.height);
 	for(let i = 0; i < vtx_drawers.length; i++){
-		vtx_drawers[i].set_transform(scene[i].model_to_world);
+		vtx_drawers[i].set_transform(scene.geometries[i].model_to_world);
 		vtx_drawers[i].draw();
 	}
 
