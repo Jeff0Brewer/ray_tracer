@@ -21,7 +21,7 @@ function main(){
 	gl.uniformMatrix4fv(u_ViewMatrix, false, view_matrix);
 	gl.uniformMatrix4fv(u_ProjMatrix, false, proj_matrix);
 
-	light0 = new PhongLight([0, -15, 8, 0], [1, 1, 1], [1, 1, 1]);
+	light0 = new PhongLight([0, -50, 50, 0], [1, 1, 1], [1, 1, 1]);
 
 	plane = new Plane();
 	disk = new Disk();
@@ -39,7 +39,7 @@ function main(){
 	cube.modelTranslate([-5, 5, 5]);
 	cube.modelScale([3, 2, 1]);
 
-	scene =  new Scene([plane, disk, sphere, cube], [light0], [.2, .2, .2]);
+	scene =  new Scene(cam, [plane, disk, sphere, cube], [light0], [.2, .2, .2]);
 
 	u_Camera = gl.getUniformLocation(gl.program, 'u_Camera');
 	u_Ambient = gl.getUniformLocation(gl.program, 'u_Ambient');
@@ -105,7 +105,7 @@ function main(){
 }
 
 function update_trace(){
-	cam.trace(scene, img);
+	scene.trace_image(img);
 	img_drawer.buffer_img(img);
 }
 

@@ -1,35 +1,71 @@
-class Scene{
-	constructor(geometries, lights, ambient){
-		this.geometries = geometries;
-		this.lights = lights;
-		this.am = ambient;
-	}
+function Scene(camera, geometries, lights, ambient){
+	this.camera = camera;
+	this.geometries = geometries;
+	this.lights = lights;
+	this.am = ambient;
+	this.e = -.0001;
+}
 
-	trace_ray(ray){
-		let min_d = 1000000;
-		let col = [0, 0, 0];
-		let Se = 50;
-		for(let g = 0; g < this.geometries.length; g++){
-			let hit = this.geometries[g].trace(ray);
-			if(hit){
-				let hit_d = vec3.length(vec3.subtract([0,0,0], ray.pos, hit.p))
-				if(hit_d < min_d){
-					min_d = hit_d;
-					let N = hit.n;
-					let V = vec3.normalize([0,0,0], vec3.subtract([0,0,0], ray.pos, hit.p));
-					for(let l = 0; l < this.lights.length; l++){
-						let L = vec3.normalize([0,0,0], vec3.subtract([0,0,0], this.lights[l].pos, hit.p));
+Scene.prototype.trace_shadow = function(ray){
+	for(let g = 0; g < this.geometries.length; g++){
+		let hit = this.geometries[g].trace(ray);
+		if(hit){
+			return false;
+		}
+	}
+	return true;
+}
+
+Scene.prototype.trace_ray = function(ray){
+	let min_d = 1000000;
+	let col = [0, 0, 0];
+	let Se = 50;
+	let shadow_ray = new Ray();
+	for(let g = 0; g < this.geometries.length; g++){
+		let hit = this.geometries[g].trace(ray);
+		if(hit){
+			let hit_d = vec3.length(vec3.subtract([0,0,0], ray.pos, hit.p))
+			if(hit_d < min_d){
+				min_d = hit_d;
+				let N = vec3.normalize([0,0,0], hit.n);
+				let V = vec3.normalize([0,0,0], vec3.subtract([0,0,0], ray.pos, hit.p));
+				for(let l = 0; l < this.lights.length; l++){
+					col = vec3.multiply([0,0,0], this.am, hit.mat.am);
+					let L = vec3.normalize([0,0,0], vec3.subtract([0,0,0], this.lights[l].pos, hit.p));
+					vec3.copy(shadow_ray.pos, vec3.scaleAndAdd([0,0,0], hit.p, ray.dir, this.e));
+					vec3.copy(shadow_ray.dir, L);
+					if(this.trace_shadow(shadow_ray)){
 						let R = vec3.normalize([0,0,0], vec3.scaleAndAdd([0,0,0], L, N, 2*vec3.dot(N, L)));
-						col = vec3.multiply([0,0,0], this.am, hit.mat.am);
 						vec3.scaleAndAdd(col, col, vec3.multiply([0,0,0], this.lights[l].di, hit.mat.di), Math.max(0, vec3.dot(N, L)));
 						vec3.scaleAndAdd(col, col, vec3.multiply([0,0,0], this.lights[l].sp, hit.mat.sp), Math.pow(Math.max(0, vec3.dot(R, V)), Se));
 					}
 				}
 			}
 		}
-		return col;
 	}
+	return col;
 }
+
+Scene.prototype.trace_image = function(img_buffer){
+	let smp_frac = 1/this.camera.samples;
+	let eye_ray = new Ray();
+	for(let x = 0; x < this.camera.w; x++){
+		for(let y = 0; y < this.camera.h; y++){
+			let pix_col = [0, 0, 0];
+			for(let sx = 0; sx < this.camera.samples; sx++){
+				for(let sy = 0; sy < this.camera.samples; sy++){
+					let hit_d = 1000000;
+					this.camera.setEyeRay(eye_ray, x + sx*smp_frac + Math.random()*smp_frac, y + sy*smp_frac + Math.random()*smp_frac);
+					vec3.add(pix_col, pix_col, this.trace_ray(eye_ray));
+				}
+			}
+			vec3.scale(pix_col, pix_col, smp_frac*smp_frac);
+			img_buffer.set_pixel_float(pix_col, x, y);
+		}
+	}
+	img_buffer.float_to_int();
+}
+
 
 function Camera(cam, focus, up, rot_speed, zoom_speed, width, height){
 	this.pos = cam;
@@ -69,26 +105,6 @@ function Camera(cam, focus, up, rot_speed, zoom_speed, width, height){
 	}
 	this.u_step = (this.frustum.right - this.frustum.left)/this.w;
 	this.v_step = (this.frustum.top - this.frustum.bottom)/this.h;
-}
-
-Camera.prototype.trace = function(scene, img_buffer){
-	let smp_frac = 1/this.samples;
-	let eye_ray = new Ray();
-	for(let x = 0; x < this.w; x++){
-		for(let y = 0; y < this.h; y++){
-			let pix_col = [0, 0, 0];
-			for(let sx = 0; sx < this.samples; sx++){
-				for(let sy = 0; sy < this.samples; sy++){
-					let hit_d = 1000000;
-					this.setEyeRay(eye_ray, x + sx*smp_frac + Math.random()*smp_frac, y + sy*smp_frac + Math.random()*smp_frac);
-					vec3.add(pix_col, pix_col, scene.trace_ray(eye_ray));
-				}
-			}
-			vec3.scale(pix_col, pix_col, smp_frac*smp_frac);
-			img_buffer.set_pixel_float(pix_col, x, y);
-		}
-	}
-	img_buffer.float_to_int();
 }
 
 Camera.prototype.setEyeRay = function(out_ray, x_pix, y_pix){
