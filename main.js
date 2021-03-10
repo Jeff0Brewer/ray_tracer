@@ -45,7 +45,7 @@ function main(){
 	cube.modelTranslate([0, 5, 5]);
 	cube.modelScale([2, 2, 3]);
 
-	scene =  new Scene(cam, [plane, disk, sphere0, sphere1, cube], [light0, light1], [.2, .2, .2], 2);
+	scene =  new Scene(cam, [plane, disk, sphere0, sphere1, cube], [light0, light1], [.2, .2, .2], 1);
 
 	u_Camera = gl.getUniformLocation(gl.program, 'u_Camera');
 	u_Ambient = gl.getUniformLocation(gl.program, 'u_Ambient');

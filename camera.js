@@ -51,7 +51,7 @@ Scene.prototype.trace_ray = function(ray, reflections){
 					vec3.copy(reflect_ray.dir, vec3.scaleAndAdd([0,0,0], ray.dir, N, -2*vec3.dot(ray.dir, N)));
 					vec3.copy(reflect_ray.pos, vec3.scaleAndAdd([0,0,0], hit.p, ray.dir, this.e));
 					let ref_col = this.trace_ray(reflect_ray, reflections - 1);
-					vec3.scaleAndAdd(col, col, vec3.multiply([0,0,0], ref_col, hit.mat.sp), map(reflections, [1, this.reflections], [.2, 1]));
+					vec3.scaleAndAdd(col, col, vec3.multiply([0,0,0], ref_col, hit.mat.sp), map(reflections, [0, this.reflections], [.2, 1]));
 				}
 			}
 		}
@@ -59,7 +59,7 @@ Scene.prototype.trace_ray = function(ray, reflections){
 	return col;
 }
 
-Scene.prototype.trace_image = function(img_buffer, reflections){
+Scene.prototype.trace_image = function(img_buffer){
 	let smp_frac = 1/this.camera.samples;
 	let off = 0;
 	if(this.camera.samples == 1){
