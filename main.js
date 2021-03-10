@@ -190,6 +190,13 @@ function main(){
 			cam.samples = value;
 		}
 	}
+
+	document.getElementById('reflections').onchange = function(){
+		let value = parseInt(this.value);
+		if(!Number.isNaN(value)){
+			scene.reflections = value;
+		}
+	}
 }
 
 function update_trace(){
