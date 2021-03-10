@@ -1,7 +1,8 @@
-function Scene(camera, geometries, lights, ambient){
+function Scene(camera, geometries, lights, ambient, reflections){
 	this.camera = camera;
 	this.geometries = geometries;
 	this.lights = lights;
+	this.reflections = reflections;
 	this.am = ambient;
 	this.e = -.0001;
 }
@@ -16,11 +17,12 @@ Scene.prototype.trace_shadow = function(ray, d){
 	return true;
 }
 
-Scene.prototype.trace_ray = function(ray){
+Scene.prototype.trace_ray = function(ray, reflections){
 	let min_d = 1000000;
 	let col = [0, 0, 0];
 	let Se = 50;
 	let shadow_ray = new Ray();
+	let reflect_ray = new Ray();
 	for(let g = 0; g < this.geometries.length; g++){
 		let hit = this.geometries[g].trace(ray);
 		if(hit){
@@ -39,9 +41,17 @@ Scene.prototype.trace_ray = function(ray){
 						if(this.trace_shadow(shadow_ray, vec3.length(dL))){
 							let R = vec3.normalize([0,0,0], vec3.scaleAndAdd([0,0,0], L, N, 2*vec3.dot(N, L)));
 							vec3.scaleAndAdd(col, col, vec3.multiply([0,0,0], this.lights[l].di, hit.mat.di), Math.max(0, vec3.dot(N, L)));
-							vec3.scaleAndAdd(col, col, vec3.multiply([0,0,0], this.lights[l].sp, hit.mat.sp), Math.pow(Math.max(0, vec3.dot(R, V)), Se));
+							if(reflections == 0){
+								vec3.scaleAndAdd(col, col, vec3.multiply([0,0,0], this.lights[l].sp, hit.mat.sp), Math.pow(Math.max(0, vec3.dot(R, V)), Se));
+							}
 						}
 					}
+				}
+				if(reflections > 0){
+					vec3.copy(reflect_ray.dir, vec3.scaleAndAdd([0,0,0], ray.dir, N, -2*vec3.dot(ray.dir, N)));
+					vec3.copy(reflect_ray.pos, vec3.scaleAndAdd([0,0,0], hit.p, ray.dir, this.e));
+					let ref_col = this.trace_ray(reflect_ray, reflections - 1);
+					vec3.scaleAndAdd(col, col, vec3.multiply([0,0,0], ref_col, hit.mat.sp), map(reflections, [1, this.reflections], [.2, 1]));
 				}
 			}
 		}
@@ -49,7 +59,7 @@ Scene.prototype.trace_ray = function(ray){
 	return col;
 }
 
-Scene.prototype.trace_image = function(img_buffer){
+Scene.prototype.trace_image = function(img_buffer, reflections){
 	let smp_frac = 1/this.camera.samples;
 	let off = 0;
 	if(this.camera.samples == 1){
@@ -64,7 +74,7 @@ Scene.prototype.trace_image = function(img_buffer){
 				for(let sy = 0; sy < this.camera.samples; sy++){
 					let hit_d = 1000000;
 					this.camera.setEyeRay(eye_ray, x + sx*smp_frac + Math.random()*smp_frac + off, y + sy*smp_frac + Math.random()*smp_frac + off);
-					vec3.add(pix_col, pix_col, this.trace_ray(eye_ray));
+					vec3.add(pix_col, pix_col, this.trace_ray(eye_ray, this.reflections));
 				}
 			}
 			if(smp_frac != 0){

@@ -14,10 +14,10 @@ class Ray{
 }
 
 class Cube{
-	constructor(){
+	constructor(material){
 		this.pos = [0, 0, 0];
 		this.s = 1;
-		this.material = new PhongMat([.5, .2, .2], [1, 0, 0], [1, 0, .25]);
+		this.material = material;
 		this.world_to_model = mat4.create();
 		this.model_to_world = mat4.create();
 
@@ -127,10 +127,10 @@ class Cube{
 }
 
 class Sphere{
-	constructor(){
+	constructor(material){
 		this.pos = [0, 0, 0];
 		this.r = 1;
-		this.material = new PhongMat([.25, .5, 0], [1, 1, 0], [1, 1, 1]);
+		this.material = material;
 		this.world_to_model = mat4.create();
 		this.model_to_world = mat4.create();
 
@@ -209,11 +209,11 @@ class Sphere{
 }
 
 class Disk{
-	constructor(){
+	constructor(material){
 		this.pos = [0, 0, 0];
 		this.n = [0, 0, 1];
 		this.r = 1;
-		this.material = new PhongMat([1, 0, 1], [1, 0, 1], [1, .5, 1]);
+		this.material = material;
 		this.world_to_model = mat4.create();
 		this.model_to_world = mat4.create();
 
@@ -292,8 +292,8 @@ class Plane{
 		this.world_to_model = mat4.create();
 		this.model_to_world = mat4.create();
 		this.materials = [
-			new PhongMat([.1, 0, .1], [.1, 0, .1], [0, 0, 0]),
-			new PhongMat([.5, .5, .5], [.5, .5, .5], [0, 0, 0])
+			new PhongMat([.1, 0, .1], [.1, 0, .1], [.1, .1, .1]),
+			new PhongMat([.5, .5, .5], [.5, .5, .5], [.1, .1, .1])
 		];
 
 		let axis = {

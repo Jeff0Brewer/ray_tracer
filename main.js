@@ -4,7 +4,7 @@ function main(){
 	c = document.getElementById('canvas');
 	setup_gl(c);
 
-	cam = new Camera([0, -15, 8], [0, 0, 3], [0, 0, 1], .01, .01, c.width/2, c.height);
+	cam = new Camera([0, -10, 8], [1, 0, 4], [0, 0, 1], .01, .01, c.width/2, c.height);
 	cam.rayPerspective(fovy, c.width/2/c.height, .1);
 
 	model_matrix = mat4.create();
@@ -25,27 +25,27 @@ function main(){
 	light1 = new PhongLight([50, 0, 50, 0], [1, 1, 1], [1, 1, 1]);
 
 	plane = new Plane();
-	disk = new Disk();
-	sphere0 = new Sphere();
-	sphere1 = new Sphere();
-	cube = new Cube();
+	disk = new Disk(new PhongMat([1, 0, 1], [1, 0, 1], [1, .5, 1]));
+	sphere0 = new Sphere(new PhongMat([.25, .5, 0], [1, 1, 0], [.75, .75, .5]));
+	sphere1 = new Sphere(new PhongMat([.25, 1, .5], [1, 1, 1], [.75, .5, .75]));
+	cube = new Cube(new PhongMat([.5, .2, .2], [1, 0, 0], [1, .5, .5]));
 
-	disk.modelRotate(Math.PI/8, [1, 0, 0]);
-	disk.modelTranslate([0, 0, 3]);
-	disk.modelScale([4, 4, 4]);
+	disk.modelRotate(Math.PI/16, [1, 0, 0]);
+	disk.modelTranslate([0, 0, 2]);
+	disk.modelScale([3, 2, 4]);
 
 	sphere0.modelTranslate([5, 5, 5]);
 	sphere0.modelScale([3, 3, 4]);
 
-	sphere1.modelTranslate([-4, 9, 5]);
+	sphere1.modelTranslate([0, 0, 5]);
 	sphere1.modelRotate(Math.PI/4, [0, 1, 0]);
-	sphere1.modelScale([4, 2, 4]);
+	sphere1.modelScale([1, 1, 1.5]);
 
 	cube.modelRotate(Math.PI/8, [0, 0, 1]);
-	cube.modelTranslate([-5, 5, 5]);
-	cube.modelScale([3, 2, 1]);
+	cube.modelTranslate([0, 5, 5]);
+	cube.modelScale([2, 2, 3]);
 
-	scene =  new Scene(cam, [plane, disk, sphere0, sphere1, cube], [light0, light1], [.2, .2, .2]);
+	scene =  new Scene(cam, [plane, disk, sphere0, sphere1, cube], [light0, light1], [.2, .2, .2], 2);
 
 	u_Camera = gl.getUniformLocation(gl.program, 'u_Camera');
 	u_Ambient = gl.getUniformLocation(gl.program, 'u_Ambient');
