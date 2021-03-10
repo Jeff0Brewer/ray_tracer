@@ -48,6 +48,11 @@ Scene.prototype.trace_ray = function(ray){
 
 Scene.prototype.trace_image = function(img_buffer){
 	let smp_frac = 1/this.camera.samples;
+	let off = 0;
+	if(this.camera.samples == 1){
+		smp_frac = 0;
+		off = .5;
+	}
 	let eye_ray = new Ray();
 	for(let x = 0; x < this.camera.w; x++){
 		for(let y = 0; y < this.camera.h; y++){
@@ -55,11 +60,13 @@ Scene.prototype.trace_image = function(img_buffer){
 			for(let sx = 0; sx < this.camera.samples; sx++){
 				for(let sy = 0; sy < this.camera.samples; sy++){
 					let hit_d = 1000000;
-					this.camera.setEyeRay(eye_ray, x + sx*smp_frac + Math.random()*smp_frac, y + sy*smp_frac + Math.random()*smp_frac);
+					this.camera.setEyeRay(eye_ray, x + sx*smp_frac + Math.random()*smp_frac + off, y + sy*smp_frac + Math.random()*smp_frac + off);
 					vec3.add(pix_col, pix_col, this.trace_ray(eye_ray));
 				}
 			}
-			vec3.scale(pix_col, pix_col, smp_frac*smp_frac);
+			if(smp_frac != 0){
+				vec3.scale(pix_col, pix_col, smp_frac*smp_frac);
+			}
 			img_buffer.set_pixel_float(pix_col, x, y);
 		}
 	}
