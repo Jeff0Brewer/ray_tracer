@@ -11,6 +11,18 @@ function midpoint(a, b){
 	return o;
 }
 
+//find normal matrix from model matrix
+function find_normal_matrix(model_matrix){
+	let normal_matrix = mat4.create();
+	mat4.transpose(normal_matrix, model_matrix);
+	normal_matrix[3] = 0;
+	normal_matrix[7] = 0;
+	normal_matrix[11] = 0;
+	mat4.invert(normal_matrix, normal_matrix);
+
+	return normal_matrix;
+}
+
 //generate an isosphere with given iterations
 function gen_iso(iter, mode){ 
 	//init base with 20 sides

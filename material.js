@@ -11,5 +11,6 @@ class PhongLight{
 		this.pos = position.slice();
 		this.di = diffuse.slice();
 		this.sp = specular.slice();
+		this.on = true;
 	}
 }

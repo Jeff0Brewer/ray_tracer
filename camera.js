@@ -6,10 +6,10 @@ function Scene(camera, geometries, lights, ambient){
 	this.e = -.0001;
 }
 
-Scene.prototype.trace_shadow = function(ray){
+Scene.prototype.trace_shadow = function(ray, d){
 	for(let g = 0; g < this.geometries.length; g++){
 		let hit = this.geometries[g].trace(ray);
-		if(hit){
+		if(hit && d > vec3.length(vec3.subtract([0,0,0], ray.pos, hit.p))){
 			return false;
 		}
 	}
@@ -29,15 +29,18 @@ Scene.prototype.trace_ray = function(ray){
 				min_d = hit_d;
 				let N = vec3.normalize([0,0,0], hit.n);
 				let V = vec3.normalize([0,0,0], vec3.subtract([0,0,0], ray.pos, hit.p));
+				col = vec3.multiply([0,0,0], this.am, hit.mat.am);
 				for(let l = 0; l < this.lights.length; l++){
-					col = vec3.multiply([0,0,0], this.am, hit.mat.am);
-					let L = vec3.normalize([0,0,0], vec3.subtract([0,0,0], this.lights[l].pos, hit.p));
-					vec3.copy(shadow_ray.pos, vec3.scaleAndAdd([0,0,0], hit.p, ray.dir, this.e));
-					vec3.copy(shadow_ray.dir, L);
-					if(this.trace_shadow(shadow_ray)){
-						let R = vec3.normalize([0,0,0], vec3.scaleAndAdd([0,0,0], L, N, 2*vec3.dot(N, L)));
-						vec3.scaleAndAdd(col, col, vec3.multiply([0,0,0], this.lights[l].di, hit.mat.di), Math.max(0, vec3.dot(N, L)));
-						vec3.scaleAndAdd(col, col, vec3.multiply([0,0,0], this.lights[l].sp, hit.mat.sp), Math.pow(Math.max(0, vec3.dot(R, V)), Se));
+					if(this.lights[l].on){
+						let dL = vec3.subtract([0,0,0], this.lights[l].pos, hit.p);
+						let L = vec3.normalize([0,0,0], dL);
+						vec3.copy(shadow_ray.pos, vec3.scaleAndAdd([0,0,0], hit.p, ray.dir, this.e));
+						vec3.copy(shadow_ray.dir, L);
+						if(this.trace_shadow(shadow_ray, vec3.length(dL))){
+							let R = vec3.normalize([0,0,0], vec3.scaleAndAdd([0,0,0], L, N, 2*vec3.dot(N, L)));
+							vec3.scaleAndAdd(col, col, vec3.multiply([0,0,0], this.lights[l].di, hit.mat.di), Math.max(0, vec3.dot(N, L)));
+							vec3.scaleAndAdd(col, col, vec3.multiply([0,0,0], this.lights[l].sp, hit.mat.sp), Math.pow(Math.max(0, vec3.dot(R, V)), Se));
+						}
 					}
 				}
 			}

@@ -46,10 +46,7 @@ class VertexDrawer{
 
 	set_transform = function(mat){
 		mat4.copy(this.model_matrix, mat);
-		mat4.transpose(this.normal_matrix, mat);
-		this.normal_matrix[3] = 0;
-		this.normal_matrix[7] = 0;
-		this.normal_matrix[11] = 0;
+		this.normal_matrix = find_normal_matrix(mat);
 	}
 
 	draw(){

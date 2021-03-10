@@ -121,7 +121,7 @@ class Cube{
 		}
 
 		vec3.transformMat4(hit_p, hit_p, this.model_to_world);
-		vec3.transformMat4(hit_n, hit_n, mat4.transpose(mat4.create(), this.model_to_world));
+		vec3.transformMat4(hit_n, hit_n, find_normal_matrix(this.model_to_world));
 		return new Hit(hit_p, hit_n, this.material);
 	}
 }
@@ -202,7 +202,7 @@ class Sphere{
 		let hit_d = tcaS/DL2 - Math.sqrt(L2hc/DL2);
 
 		let hit_p = vec3.scaleAndAdd([0,0,0], ray_p, ray_d, hit_d);
-		let hit_n = vec3.transformMat4([0,0,0], hit_p, mat4.transpose(mat4.create(), this.model_to_world));
+		let hit_n = vec3.transformMat4([0,0,0], hit_p, find_normal_matrix(this.model_to_world));
 		vec3.transformMat4(hit_p, hit_p, this.model_to_world);
 		return new Hit(hit_p, hit_n, this.material);
 	}
@@ -279,7 +279,8 @@ class Disk{
 		if(hit_r > this.r)
 			return;
 		vec3.transformMat4(hit_p, hit_p, this.model_to_world);
-		return new Hit(hit_p, this.n, this.material);
+		let hit_n = vec3.transformMat4([0,0,0], this.n, find_normal_matrix(this.model_to_world));
+		return new Hit(hit_p, hit_n, this.material);
 	}
 }
 
@@ -371,10 +372,11 @@ class Plane{
 			ray_p[1] + ray_d[1]*t,
 			this.pos[2]
 		]
+		let hit_n = vec3.transformMat4([0,0,0], this.n, find_normal_matrix(this.model_to_world));
 		let grid_p = vec3.subtract([0,0,0], hit_p, this.pos);
 		vec3.transformMat4(hit_p, hit_p, this.model_to_world)
 		if(((Math.floor(grid_p[0]/this.s) % 2) + (Math.floor(grid_p[1]/this.s) % 2)) % 2 == 0)
-			return new Hit(hit_p, this.n, this.materials[0]);
-		return new Hit(hit_p, this.n, this.materials[1]);
+			return new Hit(hit_p, hit_n, this.materials[0]);
+		return new Hit(hit_p, hit_n, this.materials[1]);
 	}
 }

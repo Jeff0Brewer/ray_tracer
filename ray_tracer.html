@@ -6,9 +6,24 @@
 </head>
 <body onload="main()">
   <canvas id="canvas" width="1200" height="650"></canvas>
-  <br>
-  <div class="label">AA SAMPLES:</div>
-  <input class="input" type="text" id="samples" value="3"/>
+  <div class="row">
+    <div class="label">LIGHT 0 (x, y, z):</div>
+    <button class="button" id="L0t">on</button>
+    <input class="input" type="text" id="L0x" value=""/>
+    <input class="input" type="text" id="L0y" value=""/>
+    <input class="input" type="text" id="L0z" value=""/>
+  </div>
+  <div class="row">
+    <div class="label">LIGHT 1 (x, y, z):</div>
+    <button class="button" id="L1t">on</button>
+    <input class="input" type="text" id="L1x" value=""/>
+    <input class="input" type="text" id="L1y" value=""/>
+    <input class="input" type="text" id="L1z" value=""/>
+  </div>
+  <div class="row">
+    <div class="label">AA SAMPLES:</div>
+    <input class="input" type="text" id="samples" value="3"/>
+  </div>
   <script id="v_simple" type="glsl">
     precision mediump float;
 
@@ -28,18 +43,26 @@
     uniform vec4 u_Light0;
     uniform vec3 u_Light0Dif;
     uniform vec3 u_Light0Spe;
+    uniform vec4 u_Light1;
+    uniform vec3 u_Light1Dif;
+    uniform vec3 u_Light1Spe;
 
     varying vec4 v_Color;
 
     void main(){
-      gl_Position = u_ProjMatrix * u_ViewMatrix * u_ModelMatrix * a_Position;
-      vec4 N = normalize(u_NormalMatrix * a_Normal);
-      vec4 V = normalize(u_Camera - u_ModelMatrix * a_Position);
-      vec4 L = normalize(u_Light0 - u_ModelMatrix * a_Position);
-      vec4 R = reflect(L, N);
+      vec3 N = normalize((u_NormalMatrix * a_Normal).xyz);
+      vec3 V = normalize(u_Camera - u_ModelMatrix * a_Position).xyz;
+      vec3 L0 = normalize(u_Light0 - u_ModelMatrix * a_Position).xyz;
+      vec3 L1 = normalize(u_Light1 - u_ModelMatrix * a_Position).xyz;
+      vec3 R0 = reflect(L0, N);
+      vec3 R1 = reflect(L1, N);
+
       float Se = 50.0;
-      vec3 RGB = u_Ambient * a_AmbRef + u_Light0Dif * a_DifRef * max(0.0, dot(N, L)) + u_Light0Spe * a_SpeRef * pow(max(0.0, dot(R, V)), Se);
+      vec3 RGB = u_Ambient * a_AmbRef;
+      RGB = RGB + u_Light0Dif * a_DifRef * max(0.0, dot(N, L0)) + u_Light0Spe * a_SpeRef * pow(max(0.0, dot(R0, V)), Se);
+      RGB = RGB + u_Light1Dif * a_DifRef * max(0.0, dot(N, L1)) + u_Light1Spe * a_SpeRef * pow(max(0.0, dot(R1, V)), Se);
       v_Color = vec4(RGB, 1.0);
+      gl_Position = u_ProjMatrix * u_ViewMatrix * u_ModelMatrix * a_Position;
     }
   </script>
   <script id="f_simple" type="glsl">
