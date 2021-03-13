@@ -5,7 +5,10 @@
   <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body onload="main()">
-  <canvas id="canvas" width="1200" height="650"></canvas>
+  <canvas id="canvas" width="1200" height="625"></canvas>
+  <div class="row">
+    <div class="label">W/A/S/D: strafe, T: trace, MOUSE DRAG: look, MOUSE ZOOM: move</div>
+  </div>
   <div class="row">
     <div class="label">LIGHT 0 (x, y, z):</div>
     <button class="button" id="L0t">on</button>
@@ -25,6 +28,8 @@
     <input class="input" type="text" id="samples" value="3"/>
     <div class="label"># REFLECTIONS:</div>
     <input class="input" type="text" id="reflections" value="3"/>
+    <div class="label">SCENE:</div>
+    <input type="range" id="scene" value="0" min="0" max="3"/>
   </div>
   <script id="v_simple" type="glsl">
     precision mediump float;

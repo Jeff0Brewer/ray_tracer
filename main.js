@@ -24,28 +24,85 @@ function main(){
 	light0 = new PhongLight([0, -10, 20, 0], [1, 1, 1], [1, 1, 1]);
 	light1 = new PhongLight([50, 0, 50, 0], [1, 1, 1], [1, 1, 1]);
 
-	plane = new Plane();
-	disk = new Disk(new PhongMat([1, 0, 1], [1, 0, 1], [1, .5, 1]));
-	sphere0 = new Sphere(new PhongMat([.25, .5, 0], [1, 1, 0], [.75, .75, .5]));
-	sphere1 = new Sphere(new PhongMat([.25, 1, .5], [1, 1, 1], [.75, .5, .75]));
-	cube = new Cube(new PhongMat([.5, .2, .2], [1, 0, 0], [1, .5, .5]));
+	scene_ind = 0;
+	geometries = [
+		[
+			new Plane(),
+			new Disk(new PhongMat([1, 0, 1], [1, 0, 1], [1, .5, 1])),
+			new Sphere(new PhongMat([.25, .5, 0], [1, 1, 0], [.75, .75, .5])),
+			new Sphere(new PhongMat([.25, 1, .5], [1, 1, 1], [.75, .5, .75])),
+			new Cube(new PhongMat([.5, .2, .2], [1, 0, 0], [1, .5, .5]))
+		],
+		[
+			new Plane(),
+			new Sphere(new PhongMat([.5, .2, .2], [1, 0, 0], [1, .5, .5])),
+			new Sphere(new PhongMat([.2, .5, .2], [0, 1, 0], [.5, 1, .5])),
+			new Sphere(new PhongMat([.2, .2, .5], [0, 0, 1], [.5, .5, 1])),
+			new Cube(new PhongMat([.5, .5, .5], [1, 1, 1], [1, 1, 1]))
+		],
+		[
+			new Plane(),
+			new Cube(new PhongMat([1, 1, 1], [1, 1, 1], [.8, .8, .8])),
+			new Cube(new PhongMat([.1, .1, .1], [.1, .1, .1], [.8, .8, .8])),
+			new Disk(new PhongMat([.7, .7, 1], [.7, .7, 1], [.25, .25, 1]))
 
-	disk.modelRotate(Math.PI/16, [1, 0, 0]);
-	disk.modelTranslate([0, 0, 2]);
-	disk.modelScale([3, 2, 4]);
+		],
+		[
+			new Plane(),
+			new Sphere(new PhongMat([.5, .2, .2], [1, 0, 1], [1, .5, 1])),
+			new Sphere(new PhongMat([.2, .5, .2], [1, 1, 1], [.75, .75, .75])),
+			new Sphere(new PhongMat([.2, .2, .5], [0, 1, 0], [.6, 1, .6])),
+			new Cube(new PhongMat([.1, .1, .1], [.1, 0, .1], [.1, .1, .1])),
+		]
+	];
 
-	sphere0.modelTranslate([5, 5, 5]);
-	sphere0.modelScale([3, 3, 4]);
+	draw_modes = [
+		[gl.TRIANGLES, gl.TRIANGLE_FAN, gl.TRIANGLES, gl.TRIANGLES, gl.TRIANGLES],
+		[gl.TRIANGLES, gl.TRIANGLES, gl.TRIANGLES, gl.TRIANGLES, gl.TRIANGLES],
+		[gl.TRIANGLES, gl.TRIANGLES, gl.TRIANGLES, gl.TRIANGLE_FAN],
+		[gl.TRIANGLES, gl.TRIANGLES, gl.TRIANGLES, gl.TRIANGLES, gl.TRIANGLES]
+	];
 
-	sphere1.modelTranslate([0, 0, 5]);
-	sphere1.modelRotate(Math.PI/4, [0, 1, 0]);
-	sphere1.modelScale([1, 1, 1.5]);
+	geometries[0][1].modelRotate(Math.PI/16, [1, 0, 0]);
+	geometries[0][1].modelTranslate([0, 0, 2]);
+	geometries[0][1].modelScale([3, 2, 4]);
+	geometries[0][2].modelTranslate([5, 5, 5]);
+	geometries[0][2].modelScale([3, 3, 4]);
+	geometries[0][3].modelTranslate([0, 0, 5]);
+	geometries[0][3].modelRotate(Math.PI/4, [0, 1, 0]);
+	geometries[0][3].modelScale([1, 1.25, 1.5]);
+	geometries[0][4].modelRotate(Math.PI/8, [0, 0, 1]);
+	geometries[0][4].modelTranslate([0, 5, 5]);
+	geometries[0][4].modelScale([2, 2, 3]);
 
-	cube.modelRotate(Math.PI/8, [0, 0, 1]);
-	cube.modelTranslate([0, 5, 5]);
-	cube.modelScale([2, 2, 3]);
+	let sc1r = 5;
+	geometries[1][1].modelTranslate([Math.cos(0)*sc1r, Math.sin(0)*sc1r, 3]);
+	geometries[1][1].modelScale([2, 2, 4]);
+	geometries[1][2].modelTranslate([Math.cos(Math.PI)*sc1r, Math.sin(Math.PI)*sc1r, 3]);
+	geometries[1][2].modelScale([2, 2, 6]);
+	geometries[1][3].modelTranslate([Math.cos(.5*Math.PI)*sc1r, Math.sin(.5*Math.PI)*sc1r, 3]);
+	geometries[1][3].modelScale([2, 2, 5]);
+	geometries[1][4].modelTranslate([0, 0, 3]);
+	geometries[1][4].modelRotate(Math.PI/4, [1, 1, 1]);
 
-	scene =  new Scene(cam, [plane, disk, sphere0, sphere1, cube], [light0, light1], [.2, .2, .2], 1);
+	geometries[2][1].modelTranslate([3, 0, 3]);
+	geometries[2][1].modelRotate(Math.PI/4, [1, 0, 0]);
+	geometries[2][1].modelScale([.25, 2, 2]);
+	geometries[2][2].modelTranslate([-3, 0, 3]);
+	geometries[2][2].modelRotate(Math.PI/8, [1, 0, 0]);
+	geometries[2][2].modelScale([.25, 2, 2]);
+	geometries[2][3].modelTranslate([0, 3, 2]);
+	geometries[2][3].modelRotate(-.4*Math.PI, [1, 0, 0]);
+	geometries[2][3].modelScale([3, 2, 1]);
+
+	geometries[3][1].modelTranslate([2, 0, 3]);
+	geometries[3][2].modelTranslate([0, 0, 3]);
+	geometries[3][3].modelTranslate([-2, 0, 3]);
+	geometries[3][4].modelTranslate([0, 0, 1]);
+	geometries[3][4].modelScale([3, 1, 1]);
+
+
+	scene =  new Scene(cam, geometries[scene_ind], [light0, light1], [.2, .2, .2], 3);
 
 	u_Camera = gl.getUniformLocation(gl.program, 'u_Camera');
 	u_Ambient = gl.getUniformLocation(gl.program, 'u_Ambient');
@@ -68,18 +125,15 @@ function main(){
 	img.set_random();
 	img_drawer = new ImgDrawer(1, img);
 
-	vtx_drawers = [
-		new VertexDrawer(0, plane.data.length, gl.TRIANGLES),
-		new VertexDrawer(0, disk.data.length, gl.TRIANGLE_FAN),
-		new VertexDrawer(0, sphere0.data.length, gl.TRIANGLES),
-		new VertexDrawer(0, sphere1.data.length, gl.TRIANGLES),
-		new VertexDrawer(0, cube.data.length, gl.TRIANGLES)
-	];
-	vtx_drawers[0].buffer_data(0, plane.data);
-	vtx_drawers[1].buffer_data(0, disk.data);
-	vtx_drawers[2].buffer_data(0, sphere0.data);
-	vtx_drawers[3].buffer_data(0, sphere1.data);
-	vtx_drawers[4].buffer_data(0, cube.data);
+	vtx_sh = 0;
+	vtx_drawers = [];
+	for(let i = 0; i < geometries.length; i++){
+		vtx_drawers.push([]);
+		for(let j = 0; j < geometries[i].length; j++){
+			vtx_drawers[i].push(new VertexDrawer(vtx_sh, geometries[i][j].data.length, draw_modes[i][j]));
+			vtx_drawers[i][j].buffer_data(0, geometries[i][j].data);
+		}
+	}
 
 
 	let last_t = Date.now();
@@ -197,6 +251,11 @@ function main(){
 			scene.reflections = value;
 		}
 	}
+
+	document.getElementById('scene').oninput = function(){
+		scene_ind = this.value;
+		scene.geometries = geometries[this.value];
+	}
 }
 
 function update_trace(){
@@ -208,9 +267,9 @@ function draw(){
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 	gl.viewport(0, 0, c.width/2, c.height);
-	for(let i = 0; i < vtx_drawers.length; i++){
-		vtx_drawers[i].set_transform(scene.geometries[i].model_to_world);
-		vtx_drawers[i].draw();
+	for(let i = 0; i < vtx_drawers[scene_ind].length; i++){
+		vtx_drawers[scene_ind][i].set_transform(scene.geometries[i].model_to_world);
+		vtx_drawers[scene_ind][i].draw();
 	}
 
 	gl.viewport(c.width/2, 0, c.width/2, c.height);
