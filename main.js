@@ -4,7 +4,7 @@ function main(){
 	c = document.getElementById('canvas');
 	setup_gl(c);
 
-	cam = new Camera([0, -10, 8], [1, 0, 4], [0, 0, 1], .01, .01, c.width/2, c.height);
+	cam = new Camera([0, -10, 8], [0, 0, 4], [0, 0, 1], .01, .01, c.width/2, c.height);
 	cam.rayPerspective(fovy, c.width/2/c.height, .1);
 
 	model_matrix = mat4.create();
